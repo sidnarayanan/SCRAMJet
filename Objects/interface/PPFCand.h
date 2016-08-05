@@ -1,7 +1,7 @@
 #ifndef SCRAMJET_PPFCAND
 #define SCRAMJET_PPFCAND
 
-#include "PObject.h"
+#include "SCRAMJet/Objects/interface/PObject.h"
 
 
 namespace scramjet
@@ -20,7 +20,7 @@ namespace scramjet
     
     float e, q, weight;
     int pftype;
-    ClassDef(PPFCand,0)
+    ClassDef(PPFCand,1)
   };
 }
 #endif

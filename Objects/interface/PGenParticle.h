@@ -16,7 +16,7 @@ namespace scramjet
     ~PGenParticle(){}
     
     int pdgid;
-    ClassDef(PGenParticle,0)
+    ClassDef(PGenParticle,1)
   };
 }
 #endif

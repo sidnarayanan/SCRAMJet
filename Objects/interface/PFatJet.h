@@ -4,6 +4,7 @@
 #include "PObject.h"
 #include "PPFCand.h"
 #include "PJet.h"
+#include <vector>
 
 namespace scramjet
 {
@@ -18,14 +19,14 @@ namespace scramjet
         mSD(-1),
         subjets(0)
       {}
-    ~PFatJet(){}
+    ~PFatJet() { }
 
     float tau1, tau2, tau3, mSD;
-    int *subjets;
+    std::vector<int> subjets;
 
     PJet *GetSubjet(unsigned int iSJ, TClonesArray *sjs) { return (PJet*) sjs->At(subjets[iSJ]); }
 
-    ClassDef(PFatJet,0)
+    ClassDef(PFatJet,1)
     
   };
 }

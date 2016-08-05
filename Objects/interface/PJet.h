@@ -3,6 +3,7 @@
 
 #include "PObject.h"
 #include "PPFCand.h"
+#include <vector>
 
 namespace scramjet
 {
@@ -17,14 +18,14 @@ namespace scramjet
         pfcands(0),
         jetid(-1)
       {}
-    ~PJet(){}
+    ~PJet(){ }
     
     float rawPt,csv,qgl;
-    int *pfcands;
+    std::vector<int> pfcands;
     int jetid;
 
     PPFCand *GetPFCand(unsigned int iPF, TClonesArray *cands) { return (PPFCand*) cands->At(pfcands[iPF]); }
-    ClassDef(PJet,0)
+    ClassDef(PJet,1)
   };
 }
 #endif

@@ -19,7 +19,7 @@ namespace scramjet
     ~PObject(){}
     
     float pt,eta, phi, m;
-    ClassDef(PObject,0)
+    ClassDef(PObject,1)
   };
 }
 #endif
