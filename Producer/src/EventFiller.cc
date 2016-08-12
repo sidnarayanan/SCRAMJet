@@ -15,6 +15,7 @@ EventFiller::~EventFiller(){
 }
 
 void EventFiller::init(TTree *t) {
+  PEvent::Class()->IgnoreTObjectStreamer();
   t->Branch(treename.Data(),&data,99);
 }
 

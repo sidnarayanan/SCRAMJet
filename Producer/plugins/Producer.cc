@@ -1,6 +1,7 @@
 #include "SCRAMJet/Producer/interface/Producer.h"
 #include "SCRAMJet/Producer/interface/BaseFiller.h"
 #include "SCRAMJet/Producer/interface/EventFiller.h"
+#include "SCRAMJet/Producer/interface/PFCandFiller.h"
 
 using namespace scramjet;
 
@@ -11,6 +12,16 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     EventFiller *event = new EventFiller("event");
     event->gen_token   = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("generator"));
     obj.push_back(event);
+
+    PFCandFiller *puppicands = new PFCandFiller("puppicands");
+    puppicands->reco_token   = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("puppiPFCands"));
+    puppicands->useReco      = true;
+    obj.push_back(puppicands);
+  
+    PFCandFiller *pfcands = new PFCandFiller("pfcands");
+    pfcands->pat_token    = consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("chsPFCands"));
+    pfcands->useReco      = false;
+    obj.push_back(pfcands);
 
     /*
     // -- Before Leptons (mu uses Vtx)

@@ -15,7 +15,7 @@ namespace scramjet
         lumiNumber(0),
         eventNumber(0),
         isData(false),
-        mcWeight(1)
+        mcWeight(-1)
         {}
     ~PEvent(){}
     
