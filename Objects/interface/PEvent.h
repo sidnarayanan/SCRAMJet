@@ -13,12 +13,16 @@ namespace scramjet
       PEvent():
         runNumber(0),
         lumiNumber(0),
-        eventNumber(0)
+        eventNumber(0),
+        isData(false),
+        mcWeight(1)
         {}
     ~PEvent(){}
     
     int runNumber, lumiNumber;
     ULong64_t eventNumber;
+    bool isData;
+    float mcWeight;
     ClassDef(PEvent,1)
   };
 }
