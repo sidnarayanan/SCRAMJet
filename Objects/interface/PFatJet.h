@@ -16,15 +16,16 @@ namespace scramjet
         tau1(-1),
         tau2(-1),
         tau3(-1),
-        mSD(-1),
-        subjets(0)
+        mSD(-1)//,
+        //subjets(0)
       {}
     ~PFatJet() { }
 
     float tau1, tau2, tau3, mSD;
-    std::vector<int> subjets;
+    //std::vector<int> subjets;
+    std::vector<PJet> subjets;
 
-    PJet *GetSubjet(unsigned int iSJ, TClonesArray *sjs) { return (PJet*) sjs->At(subjets[iSJ]); }
+    //PJet *GetSubjet(unsigned int iSJ, TClonesArray *sjs) { return (PJet*) sjs->At(subjets[iSJ]); }
 
     ClassDef(PFatJet,1)
     

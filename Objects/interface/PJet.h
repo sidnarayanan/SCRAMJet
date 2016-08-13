@@ -15,16 +15,16 @@ namespace scramjet
         rawPt(0),
         csv(-1),
         qgl(-1),
-        pfcands(0),
+//        constituents(0),
         jetid(-1)
       {}
     ~PJet(){ }
     
     float rawPt,csv,qgl;
-    std::vector<int> pfcands;
+    std::vector<PPFCand> constituents;
+    //TClonesArray *constituents;
     int jetid;
 
-    PPFCand *GetPFCand(unsigned int iPF, TClonesArray *cands) { return (PPFCand*) cands->At(pfcands[iPF]); }
     ClassDef(PJet,1)
   };
 }

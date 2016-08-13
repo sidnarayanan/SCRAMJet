@@ -53,7 +53,8 @@ def makeFatJets(process,isData,pfCandidates,algoLabel,jetRadius):
     puMethod='Puppi'
 
   rLabel = algoLabel+str(int(jetRadius*10))
-  customLabel = rLabel+puMethod
+  #customLabel = rLabel+puMethod
+  customLabel = puMethod+rLabel
 
   if algoLabel=='CA':
     jetAlgo = 'CambridgeAachen'
