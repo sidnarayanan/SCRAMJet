@@ -6,7 +6,8 @@ using namespace scramjet;
 PFCandFiller::PFCandFiller(TString n):
     BaseFiller()
 {
-  data = new TClonesArray("scramjet::PPFCand",8000);
+  // data = new TClonesArray("scramjet::PPFCand",8000);
+  data = new VPFCand();
   treename = n;
 }
 
@@ -15,12 +16,15 @@ PFCandFiller::~PFCandFiller(){
 }
 
 void PFCandFiller::init(TTree *t) {
-  PPFCand::Class()->IgnoreTObjectStreamer();
-  t->Branch(treename.Data(),&data,99);
+//  PPFCand::Class()->IgnoreTObjectStreamer();
+  t->Branch(treename.Data(),&data,2);
 }
 
 int PFCandFiller::analyze(const edm::Event& iEvent){
-    data->Clear();
+    // data->Clear();
+    for (auto d : *data)
+      delete d;
+    data->clear();
 
     if (useReco) {
       iEvent.getByToken(reco_token,reco_handle); 
@@ -33,11 +37,13 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
 //        if (iPF->pt() < 0.001)
 //          continue; // kill 0-weight puppi particles
 
-        const int idx = data->GetEntries();
-        assert(idx<data->GetSize());
+        // const int idx = data->GetEntries();
+        // assert(idx<data->GetSize());
 
-        new((*data)[idx]) PPFCand();
-        PPFCand *cand = (PPFCand*)(data->At(idx));
+        // new((*data)[idx]) PPFCand();
+        // PPFCand *cand = (PPFCand*)(data->At(idx));
+
+        PPFCand *cand = new PPFCand();
 
         cand->pt = iPF->pt();
         cand->eta = iPF->eta();
@@ -46,6 +52,8 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
         cand->e = iPF->energy();
         cand->pftype = iPF->particleId();
         cand->q = iPF->charge();
+
+        data->push_back(cand);
       }
 
     } else {
@@ -59,11 +67,13 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
 //        if (iPF->pt() < 0.001)
 //          continue; // ???
 
-        const int idx = data->GetEntries();
-        assert(idx<data->GetSize());
+        // const int idx = data->GetEntries();
+        // assert(idx<data->GetSize());
 
-        new((*data)[idx]) PPFCand();
-        PPFCand *cand = (PPFCand*)(data->At(idx));
+        // new((*data)[idx]) PPFCand();
+        // PPFCand *cand = (PPFCand*)(data->At(idx));
+
+        PPFCand *cand = new PPFCand();
 
         cand->pt = iPF->pt();
         cand->eta = iPF->eta();
@@ -72,6 +82,8 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
         cand->e = iPF->energy();
         cand->pftype = iPF->pdgId();
         cand->q = iPF->charge();
+
+        data->push_back(cand);
       }
     }
 

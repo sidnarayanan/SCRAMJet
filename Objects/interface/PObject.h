@@ -1,6 +1,7 @@
 #ifndef SCRAMJET_POBJECT
 #define SCRAMJET_POBJECT
 
+#include "Common.h"
 #include <TObject.h>
 #include <TClonesArray.h>
 

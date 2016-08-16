@@ -22,5 +22,7 @@ namespace scramjet
     int pftype;
     ClassDef(PPFCand,1)
   };
+
+  typedef std::vector<PPFCand*> VPFCand;
 }
 #endif

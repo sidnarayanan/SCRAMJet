@@ -6,7 +6,8 @@ using namespace scramjet;
 JetFiller::JetFiller(TString n):
     BaseFiller()
 {
-  data = new TClonesArray("scramjet::PJet",100);
+  // data = new TClonesArray("scramjet::PJet",100);
+  data = new VJet();
   treename = n;
 }
 
@@ -15,8 +16,8 @@ JetFiller::~JetFiller(){
 }
 
 void JetFiller::init(TTree *t) {
-  PJet::Class()->IgnoreTObjectStreamer();
-  t->Branch(treename.Data(),&data,99);
+//  PJet::Class()->IgnoreTObjectStreamer();
+  t->Branch(treename.Data(),&data);
   
   if (applyJEC) {
    std::string jecDir = "jec/";
@@ -39,7 +40,10 @@ void JetFiller::init(TTree *t) {
 }
 
 int JetFiller::analyze(const edm::Event& iEvent){
-    data->Clear();
+    // data->Clear();
+    for (auto d : *data)
+      delete d;
+    data->clear(); 
 
     iEvent.getByToken(jet_token, jet_handle);
     if (applyJEC) 
@@ -72,11 +76,13 @@ int JetFiller::analyze(const edm::Event& iEvent){
 
       if (this_pt < minPt || this_rawpt < minPt) continue;
 
-      const int idx = data->GetEntries();
-      assert(idx<data->GetSize());
+      // const int idx = data->GetEntries();
+      // assert(idx<data->GetSize());
 
-      new((*data)[idx]) PJet();
-      PJet *jet = (PJet*)data->At(idx);
+      // new((*data)[idx]) PJet();
+      // PJet *jet = (PJet*)data->At(idx);
+
+      PJet *jet = new PJet();
 
       jet->pt = this_pt;
       jet->rawPt = this_rawpt;
@@ -84,6 +90,8 @@ int JetFiller::analyze(const edm::Event& iEvent){
       jet->phi = j.phi();
       jet->m = j.mass();
       jet->csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
+      data->push_back(jet);
 
     }
 

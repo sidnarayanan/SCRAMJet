@@ -4,9 +4,6 @@
 #include "SCRAMJet/Producer/interface/BaseFiller.h"
 #include "SCRAMJet/Objects/interface/PPFCand.h"
 
-#include <map>
-#include <string>
-
 class PFCandFiller : virtual public BaseFiller
 {
     public:
@@ -25,7 +22,8 @@ class PFCandFiller : virtual public BaseFiller
         bool useReco=true;
 
     private:
-        TClonesArray *data;
+        // TClonesArray *data;
+        scramjet::VPFCand *data;
         TString treename;
 };
 

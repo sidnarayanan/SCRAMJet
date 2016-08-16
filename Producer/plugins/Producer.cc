@@ -2,6 +2,9 @@
 #include "SCRAMJet/Producer/interface/BaseFiller.h"
 #include "SCRAMJet/Producer/interface/EventFiller.h"
 #include "SCRAMJet/Producer/interface/PFCandFiller.h"
+#include "SCRAMJet/Producer/interface/JetFiller.h"
+#include "SCRAMJet/Producer/interface/FatJetFiller.h"
+#include "SCRAMJet/Producer/interface/GenParticleFiller.h"
 
 using namespace scramjet;
 
@@ -22,6 +25,58 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     pfcands->pat_token    = consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("chsPFCands"));
     pfcands->useReco      = false;
     obj.push_back(pfcands);
+
+    JetFiller *chsAK4     = new JetFiller("chsAK4");
+    chsAK4->rho_token     = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    chsAK4->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsAK4"));
+    chsAK4->applyJEC      = false;
+    chsAK4->minPt         = 15;
+    obj.push_back(chsAK4);
+
+    JetFiller *puppiAK4     = new JetFiller("puppiAK4");
+    puppiAK4->rho_token     = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    puppiAK4->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiAK4"));
+    puppiAK4->applyJEC      = true;
+    puppiAK4->minPt         = 15;
+    obj.push_back(puppiAK4);
+
+    FatJetFiller *chsAK8  = new FatJetFiller("chsAK8");
+    chsAK8->rho_token     = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    chsAK8->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsAK8"));
+    chsAK8->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDropchsAK8","SubJets"));
+    chsAK8->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("chsAK8PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
+    chsAK8->jetRadius     = 0.8;
+    obj.push_back(chsAK8);
+
+    FatJetFiller *puppiAK8  = new FatJetFiller("puppiAK8");
+    puppiAK8->rho_token     = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    puppiAK8->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiAK8"));
+    puppiAK8->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDroppuppiAK8","SubJets"));
+    puppiAK8->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("puppiAK8PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
+    puppiAK8->jetRadius     = 0.8;
+    obj.push_back(puppiAK8);
+
+    FatJetFiller *chsCA15  = new FatJetFiller("chsCA15");
+    chsCA15->rho_token     = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    chsCA15->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsCA15"));
+    chsCA15->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDropchsCA15","SubJets"));
+    chsCA15->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("chsCA15PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
+    chsCA15->jetRadius     = 1.5;
+    obj.push_back(chsCA15);
+
+    FatJetFiller *puppiCA15  = new FatJetFiller("puppiCA15");
+    puppiCA15->rho_token     = consumes<double>(iConfig.getParameter<edm::InputTag>("rho"));
+    puppiCA15->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiCA15"));
+    puppiCA15->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDroppuppiCA15","SubJets"));
+    puppiCA15->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("puppiCA15PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
+    puppiCA15->jetRadius     = 1.5;
+    obj.push_back(puppiCA15);
+
+    GenParticleFiller *gen   = new GenParticleFiller("gen");
+    gen->packed_token        = consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packedgen"));
+    gen->pruned_token        = consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("prunedgen")) ;
+    obj.push_back(gen);
+
 
     /*
     // -- Before Leptons (mu uses Vtx)

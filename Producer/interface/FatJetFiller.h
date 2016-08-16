@@ -37,7 +37,9 @@ class FatJetFiller : virtual public BaseFiller
         float jetRadius;
 
     private:
-        TClonesArray *data;
+        // TClonesArray *data;
+        scramjet::VFatJet *data;
+        scramjet::VJet    *subjet_data;
         TString treename;
 
         FactorizedJetCorrector *mMCJetCorrector;   // needed for puppi fat jets

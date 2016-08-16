@@ -22,4 +22,8 @@
 #pragma link C++ class scramjet::PJet+;
 #pragma link C++ class scramjet::PFatJet+;
 #pragma link C++ class scramjet::PGenParticle+;
+#pragma link C++ class scramjet::VPFCand+;
+#pragma link C++ class scramjet::VJet+;
+#pragma link C++ class scramjet::VFatJet+;
+#pragma link C++ class scramjet::VGenParticle+;
 #endif

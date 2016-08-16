@@ -31,7 +31,8 @@ class JetFiller : virtual public BaseFiller
         float minPt=15, maxEta=4.7;
 
     private:
-        TClonesArray *data;
+        // TClonesArray *data;
+        scramjet::VJet *data;
         TString treename;
 
         FactorizedJetCorrector *mMCJetCorrector;   // needed for puppi fat jets

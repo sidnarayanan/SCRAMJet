@@ -48,9 +48,9 @@ def makeFatJets(process,isData,pfCandidates,algoLabel,jetRadius):
     pfCandidates = 'pfCHS'
   
   if pfCandidates=='pfCHS':
-    puMethod='CHS'
+    puMethod='chs'
   else:
-    puMethod='Puppi'
+    puMethod='puppi'
 
   rLabel = algoLabel+str(int(jetRadius*10))
   #customLabel = rLabel+puMethod
