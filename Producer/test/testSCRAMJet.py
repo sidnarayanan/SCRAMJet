@@ -312,6 +312,7 @@ process.p = cms.Path(
                     )
 
 ## DEBUG -- dump the event content with all the value maps ..
+'''
 process.output = cms.OutputModule(
                 "PoolOutputModule",
                       fileName = cms.untracked.string('pool.root'),
@@ -321,4 +322,5 @@ process.output_step = cms.EndPath(process.output)
 process.schedule = cms.Schedule(
 		process.p,
 		process.output_step)
+'''
 ##

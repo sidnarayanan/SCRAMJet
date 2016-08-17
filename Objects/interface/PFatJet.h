@@ -28,7 +28,7 @@ namespace scramjet
     // VJet *subjets;
 
     int firstSubjet, nSubjets;
-    // PJet *getSubjet(unsigned int iSJ, VJet *subjets) { return subjets->at(firstSubjet+iSJ); }
+    PJet *getSubjet(unsigned int iSJ, VJet *subjets) { return subjets->at(firstSubjet+iSJ); }
 
     ClassDef(PFatJet,1)
     

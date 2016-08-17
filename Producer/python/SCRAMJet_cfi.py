@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from subprocess import check_output
 import os
 
+
 #------------------------------------------------------
 SCRAMJet = cms.EDAnalyzer("Producer",
 
@@ -15,6 +16,13 @@ SCRAMJet = cms.EDAnalyzer("Producer",
     electrons = cms.InputTag("slimmedElectrons"),
     taus = cms.InputTag("slimmedTaus"),
     photons = cms.InputTag("slimmedPhotons"),
+
+    doCHSCands = cms.bool(True),
+    doPuppiCands = cms.bool(True),
+    savePuppiCA15Cands = cms.bool(True), # not strictly necessary, but speeds things up offline
+    saveCHSCA15Cands = cms.bool(True), 
+    savePuppiAK8Cands = cms.bool(True),
+    saveCHSAK8Cands = cms.bool(True), 
 
     chsAK4 = cms.InputTag("slimmedJets"),
     puppiAK4 = cms.InputTag("patJetsPFAK4Puppi"),

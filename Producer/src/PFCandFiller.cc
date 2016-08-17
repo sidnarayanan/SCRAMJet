@@ -6,7 +6,6 @@ using namespace scramjet;
 PFCandFiller::PFCandFiller(TString n):
     BaseFiller()
 {
-  // data = new TClonesArray("scramjet::PPFCand",8000);
   data = new VPFCand();
   treename = n;
 }
@@ -21,10 +20,15 @@ void PFCandFiller::init(TTree *t) {
 }
 
 int PFCandFiller::analyze(const edm::Event& iEvent){
-    // data->Clear();
     for (auto d : *data)
       delete d;
     data->clear();
+
+    candMap.clear();
+
+    if (skipEvent!=0 && *skipEvent) {
+      return 0;
+    }
 
     if (useReco) {
       iEvent.getByToken(reco_token,reco_handle); 
@@ -34,14 +38,6 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
 
       for (reco::PFCandidateCollection::const_iterator iPF=pfCol->begin();
             iPF!=pfCol->end(); ++iPF) {
-//        if (iPF->pt() < 0.001)
-//          continue; // kill 0-weight puppi particles
-
-        // const int idx = data->GetEntries();
-        // assert(idx<data->GetSize());
-
-        // new((*data)[idx]) PPFCand();
-        // PPFCand *cand = (PPFCand*)(data->At(idx));
 
         PPFCand *cand = new PPFCand();
 
@@ -54,6 +50,8 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
         cand->q = iPF->charge();
 
         data->push_back(cand);
+
+        candMap[&(*iPF)] = (UShort_t)(data->size()-1);
       }
 
     } else {
@@ -64,14 +62,6 @@ int PFCandFiller::analyze(const edm::Event& iEvent){
 
       for(pat::PackedCandidateCollection::const_iterator iPF = pfCol->begin(); 
             iPF!=pfCol->end(); ++iPF) {
-//        if (iPF->pt() < 0.001)
-//          continue; // ???
-
-        // const int idx = data->GetEntries();
-        // assert(idx<data->GetSize());
-
-        // new((*data)[idx]) PPFCand();
-        // PPFCand *cand = (PPFCand*)(data->At(idx));
 
         PPFCand *cand = new PPFCand();
 

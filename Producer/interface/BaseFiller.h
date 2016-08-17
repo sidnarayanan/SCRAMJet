@@ -14,5 +14,7 @@ class BaseFiller
         virtual int  analyze(const edm::Event &iEvent,const edm::EventSetup& iSetup) { return analyze(iEvent) ; } ;
         virtual inline string name(){return "BaseFiller";};
         virtual void init(TTree *t) = 0;
+
+        bool *skipEvent=0;
 };
 #endif

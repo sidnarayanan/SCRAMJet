@@ -48,6 +48,10 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
       delete d;
     subjet_data->clear();
 
+    if (skipEvent!=0 && *skipEvent) {
+      return 0;
+    }
+
     iEvent.getByToken(jet_token, jet_handle);
     iEvent.getByToken(rho_token,rho_handle);
     iEvent.getByToken(subjets_token,subjets_handle);
@@ -102,19 +106,12 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
       jet->firstSubjet = subjet_data->size();
       jet->nSubjets = 0;
 
-      // jet->subjets = new TClonesArray("scramjet::PJet",5);
-      // TClonesArray *subjets = jet->subjets;
-
       for (reco::PFJetCollection::const_iterator i = subjetCol->begin(); i!=subjetCol->end(); ++i) {
 
         if (reco::deltaR(i->eta(),i->phi(),j.eta(),j.phi())>jetRadius) 
           continue;
 
         jet->nSubjets++;
-
-        // const int jdx = subjets->GetEntries();
-        // new ((*subjets)[jdx]) PJet();
-        // PJet *subjet = (PJet*)subjets->At(jdx);
 
         PJet *subjet = new PJet();
 
@@ -126,41 +123,28 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
         reco::JetBaseRef sjBaseRef(reco::PFJetRef(subjets_handle,i-subjetCol->begin()));
         subjet->csv = (float)(*(btags_handle.product()))[sjBaseRef];
 
-        // std::vector<reco::PFCandidatePtr> constituentPtrs = i->getPFConstituents();
-        // for (auto ptr : constituentPtrs) 
-        // {
-        //   const reco::PFCandidate *constituent = ptr.get();
-
-        // subjet->constituents = new TClonesArray("scramjet::PPFCand",1000);
-        // TClonesArray *constituents = subjet->constituents;
-
-        subjet->constituents = new VPFCand();
-        VPFCand *constituents = subjet->constituents;
-
-        reco::Jet thisSubjet(*i);
-        for (unsigned k=0; k < thisSubjet.getJetConstituents().size(); k++){
-          const edm::Ptr<reco::Candidate> constituent = thisSubjet.getJetConstituents().at(k);
-
-          // const int kdx = subjet->constituents->GetEntries();
-          // if (kdx>=1000)
-          //   break; // ???
-
-          // new ((*constituents)[kdx]) PPFCand();
-          // PPFCand *cand = (PPFCand*)constituents->At(kdx);
-
-          PPFCand *cand = new PPFCand();
-
-          cand->pt = constituent->pt();
-          cand->eta = constituent->eta();
-          cand->phi = constituent->phi();
-          cand->m = constituent->mass();
-
-          constituents->push_back(cand);
-
-        }
-
         subjet_data->push_back(subjet);
         
+      }
+
+      if (pfcands!=0) {
+        const std::map<const reco::PFCandidate*,UShort_t> &pfmap = pfcands->get_map();
+
+        std::vector<reco::PFCandidatePtr> constituentPtrs = j.getPFConstituents();
+        jet->constituents = new std::vector<UShort_t>();
+        std::vector<UShort_t> *constituents = jet->constituents;
+
+        for (auto ptr : constituentPtrs) {
+          const reco::PFCandidate *constituent = ptr.get();
+          
+          auto result_ = pfmap.find(constituent);
+          if (result_ == pfmap.end()) {
+            fprintf(stderr,"could not PF...\n");
+          } else {
+            constituents->push_back(result_->second);
+          }
+        }
+
       }
 
       data->push_back(jet);

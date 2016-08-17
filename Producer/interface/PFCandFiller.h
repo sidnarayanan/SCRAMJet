@@ -4,6 +4,8 @@
 #include "SCRAMJet/Producer/interface/BaseFiller.h"
 #include "SCRAMJet/Objects/interface/PPFCand.h"
 
+#include <map>
+
 class PFCandFiller : virtual public BaseFiller
 {
     public:
@@ -21,10 +23,14 @@ class PFCandFiller : virtual public BaseFiller
         
         bool useReco=true;
 
+        const std::map<const reco::PFCandidate*,UShort_t>& get_map() const { return candMap; }
+
     private:
         // TClonesArray *data;
         scramjet::VPFCand *data;
         TString treename;
+        std::map<const reco::PFCandidate*,UShort_t> candMap; // only valid if useReco is on
+
 };
 
 

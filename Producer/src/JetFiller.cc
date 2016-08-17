@@ -45,6 +45,11 @@ int JetFiller::analyze(const edm::Event& iEvent){
       delete d;
     data->clear(); 
 
+
+    if (skipEvent!=0 && *skipEvent) {
+      return 0;
+    }
+
     iEvent.getByToken(jet_token, jet_handle);
     if (applyJEC) 
       iEvent.getByToken(rho_token,rho_handle);

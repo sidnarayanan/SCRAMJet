@@ -2,6 +2,7 @@
 #define FatJet_H
 
 #include "SCRAMJet/Producer/interface/BaseFiller.h"
+#include "SCRAMJet/Producer/interface/PFCandFiller.h"
 #include "SCRAMJet/Objects/interface/PFatJet.h"
 
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -35,6 +36,8 @@ class FatJetFiller : virtual public BaseFiller
 
         float minPt=180, maxEta=2.5;
         float jetRadius;
+
+        PFCandFiller *pfcands=0; // pointer to the relevant pf cand filler, used to get a map
 
     private:
         // TClonesArray *data;

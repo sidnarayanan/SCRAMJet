@@ -26,6 +26,11 @@ int GenParticleFiller::analyze(const edm::Event& iEvent){
       delete d;
     data->clear(); 
 
+
+    if (skipEvent!=0 && *skipEvent) {
+      return 0;
+    }
+
     if (iEvent.isRealData()) return 0;
 
     iEvent.getByToken(packed_token, packed_handle);

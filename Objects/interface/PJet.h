@@ -23,7 +23,8 @@ namespace scramjet
     float rawPt,csv,qgl;
     // std::vector<PPFCand> constituents;
     // TClonesArray *constituents=0;
-    VPFCand *constituents;
+    //VPFCand *constituents;
+    std::vector<UShort_t> *constituents;
     int jetid;
 
     ClassDef(PJet,1)
