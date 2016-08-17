@@ -34,17 +34,21 @@ int Skimmer::analyze(const edm::Event& iEvent){
       if (!skip)
         break;
       for (const pat::Jet &j : *jet_handle) {
-        if (fabs(j.eta())<maxEta && j.pt()>minPt) {
+        if (fabs(j.eta())<maxEta && j.pt()>minPt && j.userFloat(treename+"SDKinematics:Mass")>minMass) {
+          //fprintf(stderr,"found %f %f\n",j.pt(),j.eta());
           skip=false;
           break;
         }
       }
     }
 
+    /*
     if (skip) {
       fprintf(stderr,"would have skipped this event!\n");
       skip=false;
     }
+    */
+
     *skipEvent = skip;
   
     return 0;

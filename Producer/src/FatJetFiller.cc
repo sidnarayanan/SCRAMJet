@@ -7,20 +7,20 @@ FatJetFiller::FatJetFiller(TString n):
     BaseFiller()
 {
   data = new VFatJet();
-  subjet_data = new VJet(); 
+  //subjet_data = new VJet(); 
   // data = new TClonesArray("scramjet::PFatJet",100);
   treename = n;
 }
 
 FatJetFiller::~FatJetFiller(){
   delete data;
-  delete subjet_data;
+  //delete subjet_data;
 }
 
 void FatJetFiller::init(TTree *t) {
   // PFatJet::Class()->IgnoreTObjectStreamer();
   t->Branch(treename.Data(),&data,99);
-  t->Branch((treename+"Subjets").Data(),&subjet_data,99);
+  //t->Branch((treename+"Subjets").Data(),&subjet_data,99);
   std::string jecDir = "jec/";
  
   std::vector<JetCorrectorParameters> mcParams;
@@ -44,9 +44,11 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
       delete d;
     data->clear();
 
+    /*
     for (auto d : *subjet_data)
       delete d;
     subjet_data->clear();
+    */
 
     if (skipEvent!=0 && *skipEvent) {
       return 0;
@@ -103,15 +105,18 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
       jet->tau3 = j.userFloat(treename+"Njettiness:tau3");
       jet->mSD  = j.userFloat(treename+"SDKinematics:Mass");
 
-      jet->firstSubjet = subjet_data->size();
-      jet->nSubjets = 0;
+      //jet->firstSubjet = subjet_data->size();
+      //jet->nSubjets = 0;
+
+      jet->subjets = new VJet();
+      VJet *subjet_data = jet->subjets;
 
       for (reco::PFJetCollection::const_iterator i = subjetCol->begin(); i!=subjetCol->end(); ++i) {
 
         if (reco::deltaR(i->eta(),i->phi(),j.eta(),j.phi())>jetRadius) 
           continue;
 
-        jet->nSubjets++;
+        //jet->nSubjets++;
 
         PJet *subjet = new PJet();
 
@@ -128,18 +133,20 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
       }
 
       if (pfcands!=0) {
-        const std::map<const reco::PFCandidate*,UShort_t> &pfmap = pfcands->get_map();
+        const std::map<const reco::Candidate*,UShort_t> &pfmap = pfcands->get_map();
 
-        std::vector<reco::PFCandidatePtr> constituentPtrs = j.getPFConstituents();
+        //std::vector<reco::PFCandidatePtr> constituentPtrs = j.getPFConstituents();
+        std::vector<edm::Ptr<reco::Candidate>> constituentPtrs = j.getJetConstituents();
         jet->constituents = new std::vector<UShort_t>();
         std::vector<UShort_t> *constituents = jet->constituents;
 
         for (auto ptr : constituentPtrs) {
-          const reco::PFCandidate *constituent = ptr.get();
-          
+          //const reco::PFCandidate *constituent = ptr.get();
+          const reco::Candidate *constituent = ptr.get();
+
           auto result_ = pfmap.find(constituent);
           if (result_ == pfmap.end()) {
-            fprintf(stderr,"could not PF...\n");
+            fprintf(stderr,"could not PF [%s] ...\n",treename.Data());
           } else {
             constituents->push_back(result_->second);
           }

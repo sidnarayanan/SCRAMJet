@@ -42,7 +42,7 @@ class FatJetFiller : virtual public BaseFiller
     private:
         // TClonesArray *data;
         scramjet::VFatJet *data;
-        scramjet::VJet    *subjet_data;
+        //scramjet::VJet    *subjet_data;
         TString treename;
 
         FactorizedJetCorrector *mMCJetCorrector;   // needed for puppi fat jets

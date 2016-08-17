@@ -25,7 +25,7 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 # the size of the output by prescaling the report of the event number
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 if isData:
    fileList = [
@@ -312,7 +312,6 @@ process.p = cms.Path(
                     )
 
 ## DEBUG -- dump the event content with all the value maps ..
-'''
 process.output = cms.OutputModule(
                 "PoolOutputModule",
                       fileName = cms.untracked.string('pool.root'),
@@ -322,5 +321,4 @@ process.output_step = cms.EndPath(process.output)
 process.schedule = cms.Schedule(
 		process.p,
 		process.output_step)
-'''
 ##

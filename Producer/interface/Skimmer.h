@@ -25,7 +25,7 @@ class Skimmer : virtual public BaseFiller
         edm::Handle<pat::JetCollection> puppiCA15_handle; 
         edm::EDGetTokenT<pat::JetCollection> puppiCA15_token;
 
-        float minPt=180, maxEta=2.5;
+        float minPt=180, maxEta=2.5, minMass=0;
 
     private:
         TString treename;

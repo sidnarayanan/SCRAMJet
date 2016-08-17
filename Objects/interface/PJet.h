@@ -27,6 +27,8 @@ namespace scramjet
     std::vector<UShort_t> *constituents;
     int jetid;
 
+    PPFCand *getPFCand(UShort_t ipf, VPFCand *vpf) { return vpf->at(ipf); }
+
     ClassDef(PJet,1)
   };
 

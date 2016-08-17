@@ -9,6 +9,12 @@
 class PFCandFiller : virtual public BaseFiller
 {
     public:
+        enum pfcandtype {
+          kPat,
+          kRecoPF,
+          kReco
+        };
+
         PFCandFiller(TString n);
         ~PFCandFiller();
         int analyze(const edm::Event& iEvent);
@@ -18,18 +24,23 @@ class PFCandFiller : virtual public BaseFiller
         edm::EDGetTokenT<pat::PackedCandidateCollection> pat_token;
         edm::Handle<pat::PackedCandidateCollection> pat_handle;
 
-        edm::EDGetTokenT<reco::PFCandidateCollection> reco_token;
-        edm::Handle<reco::PFCandidateCollection> reco_handle;
+        edm::EDGetTokenT<reco::PFCandidateCollection> recopf_token;
+        edm::Handle<reco::PFCandidateCollection> recopf_handle;
         
-        bool useReco=true;
+        edm::EDGetTokenT<reco::CandidateCollection> reco_token;
+        edm::Handle<reco::CandidateCollection> reco_handle;
+        
+        pfcandtype which_cand=kRecoPF;
 
-        const std::map<const reco::PFCandidate*,UShort_t>& get_map() const { return candMap; }
+        const std::map<const reco::Candidate*,UShort_t>& get_map() const { return candMap; }
 
     private:
         // TClonesArray *data;
         scramjet::VPFCand *data;
         TString treename;
-        std::map<const reco::PFCandidate*,UShort_t> candMap; // only valid if useReco is on
+        std::map<const reco::Candidate*,UShort_t> candMap; 
+
+        void fillCand(const reco::Candidate*);
 
 };
 

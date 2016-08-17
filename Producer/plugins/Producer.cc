@@ -17,23 +17,28 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     event->gen_token   = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("generator"));
     obj.push_back(event);
 
-    Skimmer *skim = new Skimmer("skimmer");
-    skim->chsAK8_token = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsAK8"));
-    skim->puppiAK8_token = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiAK8"));
-    skim->chsCA15_token = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsCA15"));
+    Skimmer *skim         = new Skimmer("skimmer");
+    skim->chsAK8_token    = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsAK8"));
+    skim->puppiAK8_token  = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiAK8"));
+    skim->chsCA15_token   = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsCA15"));
     skim->puppiCA15_token = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiCA15"));
-    skim->skipEvent = new bool(false);
+    skim->skipEvent       = new bool(false);
+    skim->minPt           = 180;
+    skim->minMass         = 40;
+    skim->maxEta          = 2.5;
+    obj.push_back(skim);
 
     PFCandFiller *puppicands = new PFCandFiller("puppicands");
-    puppicands->reco_token   = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("puppiPFCands"));
-    puppicands->useReco      = true;
-    puppicands->skipEvent = skim->skipEvent;
+    puppicands->which_cand   = PFCandFiller::kRecoPF;
+    puppicands->recopf_token = consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("puppiPFCands"));
+    puppicands->skipEvent    = skim->skipEvent;
     obj.push_back(puppicands);
   
     PFCandFiller *pfcands = new PFCandFiller("pfcands");
     pfcands->pat_token    = consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("chsPFCands"));
-    pfcands->useReco      = false;
-    pfcands->skipEvent = skim->skipEvent;
+    //pfcands->reco_token   = consumes<reco::CandidateCollection>(iConfig.getParameter<edm::InputTag>("chsPFCands"));
+    pfcands->which_cand   = PFCandFiller::kPat;
+    pfcands->skipEvent    = skim->skipEvent;
     obj.push_back(pfcands);
 
     JetFiller *chsAK4     = new JetFiller("chsAK4");
@@ -41,7 +46,7 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     chsAK4->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsAK4"));
     chsAK4->applyJEC      = false;
     chsAK4->minPt         = 15;
-    chsAK4->skipEvent = skim->skipEvent;
+    chsAK4->skipEvent     = skim->skipEvent;
     obj.push_back(chsAK4);
 
     JetFiller *puppiAK4     = new JetFiller("puppiAK4");
@@ -49,7 +54,7 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     puppiAK4->jet_token     = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiAK4"));
     puppiAK4->applyJEC      = true;
     puppiAK4->minPt         = 15;
-    puppiAK4->skipEvent = skim->skipEvent;
+    puppiAK4->skipEvent     = skim->skipEvent;
     obj.push_back(puppiAK4);
 
     FatJetFiller *chsAK8  = new FatJetFiller("chsAK8");
@@ -58,7 +63,8 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     chsAK8->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDropchsAK8","SubJets"));
     chsAK8->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("chsAK8PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
     chsAK8->jetRadius     = 0.8;
-    chsAK8->skipEvent = skim->skipEvent;
+    chsAK8->skipEvent     = skim->skipEvent;
+    chsAK8->pfcands       = pfcands;
     obj.push_back(chsAK8);
 
     FatJetFiller *puppiAK8  = new FatJetFiller("puppiAK8");
@@ -67,7 +73,8 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     puppiAK8->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDroppuppiAK8","SubJets"));
     puppiAK8->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("puppiAK8PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
     puppiAK8->jetRadius     = 0.8;
-    puppiAK8->skipEvent = skim->skipEvent;
+    puppiAK8->skipEvent     = skim->skipEvent;
+    puppiAK8->pfcands       = puppicands;
     obj.push_back(puppiAK8);
 
     FatJetFiller *chsCA15  = new FatJetFiller("chsCA15");
@@ -76,7 +83,8 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     chsCA15->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDropchsCA15","SubJets"));
     chsCA15->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("chsCA15PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
     chsCA15->jetRadius     = 1.5;
-    chsCA15->skipEvent = skim->skipEvent;
+    chsCA15->skipEvent     = skim->skipEvent;
+    chsCA15->pfcands       = pfcands;
     obj.push_back(chsCA15);
 
     FatJetFiller *puppiCA15  = new FatJetFiller("puppiCA15");
@@ -85,13 +93,14 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     puppiCA15->subjets_token = mayConsume<reco::PFJetCollection>(edm::InputTag("PFJetsSoftDroppuppiCA15","SubJets"));
     puppiCA15->btags_token   = mayConsume<reco::JetTagCollection>(edm::InputTag("puppiCA15PFCombinedInclusiveSecondaryVertexV2BJetTags") ) ;
     puppiCA15->jetRadius     = 1.5;
-    puppiCA15->skipEvent = skim->skipEvent;
+    puppiCA15->skipEvent     = skim->skipEvent;
+    puppiCA15->pfcands       = puppicands;
     obj.push_back(puppiCA15);
 
     GenParticleFiller *gen   = new GenParticleFiller("gen");
     gen->packed_token        = consumes<edm::View<pat::PackedGenParticle> >(iConfig.getParameter<edm::InputTag>("packedgen"));
     gen->pruned_token        = consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("prunedgen")) ;
-    gen->skipEvent = skim->skipEvent;
+    gen->skipEvent           = skim->skipEvent;
     obj.push_back(gen);
 
 }

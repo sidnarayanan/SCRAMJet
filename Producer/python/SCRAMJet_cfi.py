@@ -38,6 +38,7 @@ SCRAMJet = cms.EDAnalyzer("Producer",
 
     puppiPFCands = cms.InputTag("puppi"),
     chsPFCands = cms.InputTag('packedPFCandidates'),
+    #chsPFCands = cms.InputTag('pfCHS'),
 
     # gen
     generator = cms.InputTag("generator"),
