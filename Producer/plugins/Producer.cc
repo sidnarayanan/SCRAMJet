@@ -23,10 +23,10 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     skim->chsCA15_token   = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("chsCA15"));
     skim->puppiCA15_token = consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("puppiCA15"));
     skim->skipEvent       = new bool(false);
-    skim->minPt           = 180;
-    skim->minMass         = 40;
+    skim->minPt           = 200;
+    skim->minMass         = 0;
     skim->maxEta          = 2.5;
-    obj.push_back(skim);
+    //obj.push_back(skim);
 
     PFCandFiller *puppicands = new PFCandFiller("puppicands");
     puppicands->which_cand   = PFCandFiller::kRecoPF;

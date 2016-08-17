@@ -27,14 +27,24 @@ int Skimmer::analyze(const edm::Event& iEvent){
                                                               chsAK8_handle,
                                                               puppiAK8_handle,
                                                               chsCA15_handle,
-                                                              puppiCA15_handle,
+                                                              puppiCA15_handle
                                                             };
+    std::vector<TString> names = {
+                                    "chsAK8",
+                                    "puppiAK8",
+                                    "chsCA15",
+                                    "puppiCA15"
+                                  };
 
-    for (edm::Handle<pat::JetCollection> jet_handle : handles) {
+    unsigned int nTest = handles.size();
+
+    for (unsigned int iT=0; iT!=nTest; ++iT) {
       if (!skip)
         break;
+      edm::Handle<pat::JetCollection> jet_handle = handles.at(iT);
+      TString name = names.at(iT);
       for (const pat::Jet &j : *jet_handle) {
-        if (fabs(j.eta())<maxEta && j.pt()>minPt && j.userFloat(treename+"SDKinematics:Mass")>minMass) {
+        if (fabs(j.eta())<maxEta && j.pt()>minPt && j.userFloat(name+"SDKinematics:Mass")>minMass) {
           //fprintf(stderr,"found %f %f\n",j.pt(),j.eta());
           skip=false;
           break;
