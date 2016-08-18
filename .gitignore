@@ -2,3 +2,6 @@
 *.root
 *.d
 *pcm
+*.pyc
+*.log
+*.err
