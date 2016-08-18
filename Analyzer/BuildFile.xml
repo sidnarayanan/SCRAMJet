@@ -1,6 +1,6 @@
 <use   name="root"/>
 <use   name="roofit"/>
-<use   name="SCRAMJet/Obects"/>
+<use   name="SCRAMJet/Objects"/>
 <use   name="fastjet"/>
 <use   root=""/>
 <export>
