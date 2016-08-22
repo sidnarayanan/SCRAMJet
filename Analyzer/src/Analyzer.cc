@@ -55,6 +55,7 @@ void Analyzer::ResetBranches() {
 
 void Analyzer::SetOutputFile(TString fOutName) {
   fOut = new TFile(fOutName,"RECREATE");
+  hDTotalMCWeight = new TH1F("hDTotalMCWeight","hDTotalMCWeight",10,-2,2);
 }
 
 void Analyzer::AddEventBranches(TTree *tout) {
@@ -141,7 +142,7 @@ void Analyzer::Terminate() {
   for (auto *a : anafatjets) {
     fOut->WriteTObject(a->outtree);
   }
-
+  fOut->WriteTObject(hDTotalMCWeight);
   fOut->Close();
 //  delete ak8jec;
 //  delete ak8unc;
@@ -162,6 +163,7 @@ void Analyzer::Run() {
   if (DEBUG) sw = new TStopwatch();
   unsigned int iE=0;
   ProgressReporter pr("SCRAMJetAnalyzer::Run",&iE,&nEvents,10);
+  hDTotalMCWeight->Reset();
 
   for (iE=0; iE!=nEvents; ++iE) {
     if (DEBUG) sw->Start(true);
@@ -171,7 +173,9 @@ void Analyzer::Run() {
     if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format("-1: %f",sw->RealTime()*1000)); sw->Start(); }
 
     // event info
-    mcWeight = event->mcWeight;
+    mcWeight = (event->mcWeight>0) ? 1 : -1;
+    hDTotalMCWeight->Fill(mcWeight,mcWeight);
+
     runNumber = event->runNumber;
     lumiNumber = event->lumiNumber;
     eventNumber = event->eventNumber;
@@ -194,8 +198,6 @@ void Analyzer::Run() {
         if (good)
           targets.push_back(iG);
       } //looking for targets
-
-      PDebug("SCRAMJetAnalyzer::Run",TString::Format("Found %lu tops",targets.size()));
 
       for (int iG : targets) {
         PGenParticle *part = gen->at(iG);

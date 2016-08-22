@@ -14,7 +14,7 @@
 #include "SCRAMJet/Objects/interface/PFatJet.h"
 #include "SCRAMJet/Objects/interface/PGenParticle.h"
 
-#include "Common.h"
+#include "PandaCore/Tools/interface/Common.h"
 
 #include "vector"
 #include "map"
@@ -173,6 +173,7 @@ private:
   
   TFile *fOut;   // output file is owned by Analyzer
   TTree *tIn=0;  // input tree to read
+  TH1F *hDTotalMCWeight=0;
 
 
   scramjet::PEvent *event;                        // event object

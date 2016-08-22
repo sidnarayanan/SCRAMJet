@@ -1,6 +1,7 @@
 <use   name="root"/>
 <use   name="roofit"/>
 <use   name="SCRAMJet/Objects"/>
+<use   name="PandaCore/Tools"/>
 <use   name="fastjet"/>
 <use   root=""/>
 <export>
