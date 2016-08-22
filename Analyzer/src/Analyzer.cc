@@ -5,7 +5,7 @@
 #include <vector>
 #include "TStopwatch.h"
 
-#define DEBUG 1
+#define DEBUG 0
 using namespace scramjet;
 using namespace std;
 
@@ -22,7 +22,6 @@ Analyzer::~Analyzer() {
   for (auto *a : anajets) {
     delete a->injets;
     delete a->outjet;
-    delete a->outtree;
     delete a;
   }
   anajets.clear();
@@ -30,7 +29,6 @@ Analyzer::~Analyzer() {
   for (auto *a : anafatjets) {
     delete a->injets;
     delete a->outjet;
-    delete a->outtree;
     delete a;
   }
   anafatjets.clear();
@@ -40,6 +38,7 @@ Analyzer::~Analyzer() {
 }
 
 void Analyzer::ResetBranches() {
+  genObjects.clear();
   mcWeight=-1; 
   runNumber=-1; 
   eventNumber=-1; 
@@ -81,9 +80,8 @@ void Analyzer::AddJetFromTree(TString inName, TString outName) {
   }
   AnaJet *anajet = new AnaJet();
   
-  VJet *injets = new VJet();
-  tIn->SetBranchAddress(inName,&injets);
-  anajet->injets = injets;
+  anajet->injets = 0; // new VJet();
+  tIn->SetBranchAddress(inName,&anajet->injets);
 
   fOut->cd();
   TTree *outtree = new TTree(outName.Data(),outName.Data());
@@ -102,9 +100,8 @@ void Analyzer::AddFatJetFromTree(TString inName, TString outName,PileupAlgo pu, 
   }
   AnaFatJet *anafatjet = new AnaFatJet();
   
-  VFatJet *injets 0; //= new VFatJet();
-  tIn->SetBranchAddress(inName,&injets);
-  anafatjet->injets = injets;
+  anafatjet->injets =0; //= new VFatJet();
+  tIn->SetBranchAddress(inName,&anafatjet->injets);
 
   fOut->cd();
   TTree *outtree = new TTree(outName.Data(),outName.Data());
@@ -114,6 +111,10 @@ void Analyzer::AddFatJetFromTree(TString inName, TString outName,PileupAlgo pu, 
   FatJetWriter *outjet = new FatJetWriter(outtree);
   anafatjet->outjet = outjet;
 
+  anafatjet->radius = radius;
+  anafatjet->algo = algo;
+  anafatjet->pfcands = puppi;
+
   anafatjets.push_back(anafatjet);
 }
 
@@ -121,6 +122,7 @@ PGenParticle *Analyzer::Match(double eta, double phi, double radius) {
   PGenParticle *found=NULL;
   double r2 = radius*radius;
 
+  unsigned int counter=0;
   for (map<PGenParticle*,float>::iterator iG=genObjects.begin();
         iG!=genObjects.end(); ++iG) {
     if (found!=NULL)
@@ -134,13 +136,9 @@ PGenParticle *Analyzer::Match(double eta, double phi, double radius) {
 
 void Analyzer::Terminate() {
   for (auto *a : anajets) {
-    fprintf(stderr,"%p %p\n",fOut,a);
-    fprintf(stderr,"%p %p\n",fOut,a->outtree);
     fOut->WriteTObject(a->outtree);
   }
   for (auto *a : anafatjets) {
-    fprintf(stderr,"%p %p\n",fOut,a);
-    fprintf(stderr,"%p %p\n",fOut,a->outtree);
     fOut->WriteTObject(a->outtree);
   }
 
@@ -170,7 +168,7 @@ void Analyzer::Run() {
     pr.Report();
     ResetBranches();
     tIn->GetEntry(iE);
-    if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format("-1: %f",sw->RealTime()*1000)); sw->Start(); }
+    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format("-1: %f",sw->RealTime()*1000)); sw->Start(); }
 
     // event info
     mcWeight = event->mcWeight;
@@ -178,7 +176,7 @@ void Analyzer::Run() {
     lumiNumber = event->lumiNumber;
     eventNumber = event->eventNumber;
 
-    if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format(" 0: %f",sw->RealTime()*1000)); sw->Start(); }
+    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 0: %f",sw->RealTime()*1000)); sw->Start(); }
 
     // identify interesting gen particles
     if (processType!=kQCD && processType!=kNone) {
@@ -196,6 +194,8 @@ void Analyzer::Run() {
         if (good)
           targets.push_back(iG);
       } //looking for targets
+
+      PDebug("SCRAMJetAnalyzer::Run",TString::Format("Found %lu tops",targets.size()));
 
       for (int iG : targets) {
         PGenParticle *part = gen->at(iG);
@@ -296,7 +296,7 @@ void Analyzer::Run() {
       } // loop over targets
     } // process is not QCD or undef
 
-    if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format(" 1: %f",sw->RealTime()*1000)); sw->Start(); }
+    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 1: %f",sw->RealTime()*1000)); sw->Start(); }
 
     // these are ak4 jets stored in the tree
     for (auto *anajet : anajets) {
@@ -313,7 +313,7 @@ void Analyzer::Run() {
       anajet->outtree->Fill();
     } // loop over jet collections
 
-    if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format(" 2: %f",sw->RealTime()*1000)); sw->Start(); }
+    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2: %f",sw->RealTime()*1000)); sw->Start(); }
 
     // these are fat jets stored in the tree
     // much more complicated!
@@ -332,20 +332,20 @@ void Analyzer::Run() {
           outjet->matched = 1;
           outjet->genpt = matched->pt;
           outjet->gensize = genObjects[matched];
+        } else { 
+          outjet->matched = 0; 
         }
       } // loop over jets
 
       anafatjet->outtree->Fill();
     } // loop over jet collections
-  PDebug("SCRAMJetAnalyzer::Run",TString::Format("Saved entries: %i\n",(int)anafatjets[0]->outtree->GetEntries()));
 
-    if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format(" 3: %f",sw->RealTime()*1000)); sw->Start(); }
+    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 3: %f",sw->RealTime()*1000)); sw->Start(); }
 
   } // entry loop
-  PDebug("SCRAMJetAnalyzer::Run","Done with entry loop");
-
-  PDebug("SCRAMJetAnalyzer::Run",TString::Format("Saved entries: %i\n",(int)anafatjets[0]->outtree->GetEntries()));
 
   if (DEBUG) { delete sw; sw=0; }
+  if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run","Done with entry loop"); }
+
 } // Run()
 

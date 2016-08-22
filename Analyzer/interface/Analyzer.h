@@ -90,8 +90,8 @@ public :
       t->Branch("tau21",&tau21,"tau21/f");
       t->Branch("gensize",&gensize,"gensize/f");
       t->Branch("genpt",&genpt,"genpt/f");
-      t->Branch("idx",&idx,"idx/i");
-      t->Branch("matched",&matched,"matched/i");
+      t->Branch("idx",&idx,"idx/I");
+      t->Branch("matched",&matched,"matched/I");
     }
     void read(const scramjet::PFatJet *j) {
       // read some basic floats from j
@@ -177,8 +177,8 @@ private:
 
   scramjet::PEvent *event;                        // event object
   scramjet::VGenParticle *gen;                    // gen particle objects
-  scramjet::VPFCand *chs;                         // CHS PF cands
-  scramjet::VPFCand *puppi;                       // Puppi PF cands
+  scramjet::VPFCand *chs=0;                       // CHS PF cands
+  scramjet::VPFCand *puppi=0;                     // Puppi PF cands
   std::vector<AnaJet*> anajets;                   // narrow jets
   std::vector<AnaFatJet*> anafatjets;             // fat jets
 

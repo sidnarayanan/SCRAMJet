@@ -37,6 +37,8 @@ if __name__ == "__main__":
     skimmer.AddFatJetFromTree("puppiCA15","puppiCA15",root.Analyzer.kPuppi,1.5,root.Analyzer.kCA)
 
     skimmer.Run()
+    print 'done running'
     skimmer.Terminate()
+    print 'done terminating'
 
 fn(argv[1]) 
