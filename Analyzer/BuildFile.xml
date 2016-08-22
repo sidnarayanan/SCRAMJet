@@ -1,8 +1,11 @@
 <use   name="root"/>
 <use   name="roofit"/>
-<use   name="SCRAMJet/Obects"/>
+<use   name="SCRAMJet/Objects"/>
+<use   name="PandaCore/Tools"/>
 <use   name="fastjet"/>
 <use   root=""/>
 <export>
   <lib   name="1"/>
 </export>
+<flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable  -Os"/>
+
