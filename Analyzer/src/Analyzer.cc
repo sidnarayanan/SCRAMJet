@@ -5,7 +5,7 @@
 #include <vector>
 #include "TStopwatch.h"
 
-#define DEBUG 0
+#define DEBUG 1
 using namespace scramjet;
 using namespace std;
 
@@ -102,7 +102,7 @@ void Analyzer::AddFatJetFromTree(TString inName, TString outName,PileupAlgo pu, 
   }
   AnaFatJet *anafatjet = new AnaFatJet();
   
-  VFatJet *injets = new VFatJet();
+  VFatJet *injets 0; //= new VFatJet();
   tIn->SetBranchAddress(inName,&injets);
   anafatjet->injets = injets;
 
@@ -134,9 +134,13 @@ PGenParticle *Analyzer::Match(double eta, double phi, double radius) {
 
 void Analyzer::Terminate() {
   for (auto *a : anajets) {
+    fprintf(stderr,"%p %p\n",fOut,a);
+    fprintf(stderr,"%p %p\n",fOut,a->outtree);
     fOut->WriteTObject(a->outtree);
   }
   for (auto *a : anafatjets) {
+    fprintf(stderr,"%p %p\n",fOut,a);
+    fprintf(stderr,"%p %p\n",fOut,a->outtree);
     fOut->WriteTObject(a->outtree);
   }
 
@@ -166,6 +170,7 @@ void Analyzer::Run() {
     pr.Report();
     ResetBranches();
     tIn->GetEntry(iE);
+    if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format("-1: %f",sw->RealTime()*1000)); sw->Start(); }
 
     // event info
     mcWeight = event->mcWeight;
@@ -332,10 +337,15 @@ void Analyzer::Run() {
 
       anafatjet->outtree->Fill();
     } // loop over jet collections
+  PDebug("SCRAMJetAnalyzer::Run",TString::Format("Saved entries: %i\n",(int)anafatjets[0]->outtree->GetEntries()));
 
     if (DEBUG) { PInfo("SCRAMJetAnalyzer::Run",TString::Format(" 3: %f",sw->RealTime()*1000)); sw->Start(); }
 
   } // entry loop
+  PDebug("SCRAMJetAnalyzer::Run","Done with entry loop");
+
+  PDebug("SCRAMJetAnalyzer::Run",TString::Format("Saved entries: %i\n",(int)anafatjets[0]->outtree->GetEntries()));
+
   if (DEBUG) { delete sw; sw=0; }
 } // Run()
 
