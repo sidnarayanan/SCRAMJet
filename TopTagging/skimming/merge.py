@@ -90,9 +90,13 @@ def merge(shortnames,mergedname):
 
 
 args = {}
+d = { 'QCD' : ['QCD_ht%ito%i'%(b[0],b[1]) for b in [(200,300),(300,500),(500,700),(700,100),(1000,1500),(1500,2000)]] + ['QCD_ht2000toinf'] }
 
 for pd in argv[1:]:
-  args[pd] = [pd] 
+  try:
+    args[pd] = d[pd]
+  except KeyError:
+    args[pd] = [pd] 
 
 for pd in args:
   merge(args[pd],pd)
