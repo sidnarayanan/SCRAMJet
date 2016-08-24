@@ -2,13 +2,11 @@
 #include <vector>
 #include "TMath.h"
 
-using namespace fastjet;
-
-double DeltaR2(PseudoJet j1, PseudoJet j2) {
+double DeltaR2(fastjet::PseudoJet j1, fastjet::PseudoJet j2) {
   return DeltaR2(j1.eta(),j1.phi(),j2.eta(),j2.phi());
 }
 
-void calcECF(double beta, std::vector<PseudoJet> &constituents, double *n1=0, double *n2=0, double *n3=0, double *n4=0) {
+void calcECF(double beta, std::vector<fastjet::PseudoJet> &constituents, double *n1=0, double *n2=0, double *n3=0, double *n4=0) {
   unsigned int nC = constituents.size();
   double halfBeta = beta/2.;
 
@@ -24,9 +22,9 @@ void calcECF(double beta, std::vector<PseudoJet> &constituents, double *n1=0, do
     if (n2) { // N=2
       double val=0;
       for (unsigned int iC=0; iC!=nC; ++iC) {
-        PseudoJet iconst = constituents[iC];
+        fastjet::PseudoJet iconst = constituents[iC];
         for (unsigned int jC=0; jC!=iC; ++jC) {
-          PseudoJet jconst = constituents[jC];
+          fastjet::PseudoJet jconst = constituents[jC];
           val += iconst.perp() * jconst.perp() * pow(DeltaR2(iconst,jconst),halfBeta);
         }
       }
@@ -42,10 +40,10 @@ void calcECF(double beta, std::vector<PseudoJet> &constituents, double *n1=0, do
     dRs[iC] = new double[iC];
   }
   for (unsigned int iC=0; iC!=nC; ++iC) {
-    PseudoJet iconst = constituents[iC];
+    fastjet::PseudoJet iconst = constituents[iC];
     pTs[iC] = iconst.perp();
     for (unsigned int jC=0; jC!=iC; ++jC) {
-      PseudoJet jconst = constituents[jC];
+      fastjet::PseudoJet jconst = constituents[jC];
       dRs[iC][jC] = pow(DeltaR2(iconst,jconst),halfBeta);
     }
   }
@@ -102,7 +100,7 @@ void calcECF(double beta, std::vector<PseudoJet> &constituents, double *n1=0, do
   }
 }
 
-void calcECFN(double beta, std::vector<PseudoJet> &constituents, double *n1=0, double *n2=0, double *n3=0, double *n4=0, bool useAllAngles=false) {
+void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, double *n1=0, double *n2=0, double *n3=0, double *n4=0, bool useAllAngles=false) {
   unsigned int nC = constituents.size();
   double halfBeta = beta/2.;
 
@@ -117,10 +115,10 @@ void calcECFN(double beta, std::vector<PseudoJet> &constituents, double *n1=0, d
     dRs[iC] = new double[iC];
   }
   for (unsigned int iC=0; iC!=nC; ++iC) {
-    PseudoJet iconst = constituents[iC];
+    fastjet::PseudoJet iconst = constituents[iC];
     pTs[iC] = iconst.perp();
     for (unsigned int jC=0; jC!=iC; ++jC) {
-      PseudoJet jconst = constituents[jC];
+      fastjet::PseudoJet jconst = constituents[jC];
       dRs[iC][jC] = pow(DeltaR2(iconst,jconst),halfBeta);
     }
   }
@@ -219,9 +217,9 @@ void calcECFN(double beta, std::vector<PseudoJet> &constituents, double *n1=0, d
 }
 
 /*
-double calcECFN(double N, double beta, PseudoJet &jet) {
+double calcECFN(double N, double beta, fastjet::PseudoJet &jet) {
   double ecfn=0;
-  VPseudoJet constituents = jet.constituents();
+  Vfastjet::PseudoJet constituents = jet.constituents();
   unsigned int nC = constituents.size();
 
   // normalization
@@ -233,10 +231,10 @@ double calcECFN(double N, double beta, PseudoJet &jet) {
     dRs[iC] = new double[iC];
   }
   for (unsigned int iC=0; iC!=nC; ++iC) {
-    PseudoJet iconst = constituents[iC];
+    fastjet::PseudoJet iconst = constituents[iC];
     pTs[iC] = iconst.perp();
     for (unsigned int jC=0; jC!=iC; ++jC) {
-      PseudoJet jconst = constituents[jC];
+      fastjet::PseudoJet jconst = constituents[jC];
       dRs[iC][jC] = pow(DeltaR2(iconst.eta(),iconst.phi(),jconst.eta(),jconst.phi()),beta/2);
     }
   }

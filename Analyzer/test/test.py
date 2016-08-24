@@ -18,9 +18,17 @@ if __name__ == "__main__":
 
     skimmer = root.Analyzer()
    
-    skimmer.maxEvents = 100
+    skimmer.maxEvents = 10
     skimmer.isData=False
-    skimmer.processType = root.Analyzer.kTop
+    skimmer.doHeatMap=False
+    skimmer.doECF=True
+    skimmer.doKinFit=True
+    if 'TT' in fullPath:
+      skimmer.processType = root.Analyzer.kTop
+    elif 'WW' in fullPath:
+      skimmer.processType = root.Analyzer.kV
+    else:
+      skimmer.processType = root.Analyzer.kQCD
     eosPath = 'root://eoscms//eos/cms/store/user/%s'%(getenv('USER'))
     cernboxPath = 'root://eosuser//eos/user/%s/%s'%(getenv('USER')[0],getenv('USER'))
     cernboxBPath = 'root://eosuser//eos/user/b/bmaier'

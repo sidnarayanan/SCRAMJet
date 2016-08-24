@@ -7,11 +7,10 @@
 
 #define DEBUG 0
 using namespace scramjet;
-using namespace fastjet;
 using namespace std;
 
 Analyzer::Analyzer() {
-  // load bare minumum objects to read
+  // construct bare minumum objects 
   event = new PEvent();
   gen = new VGenParticle();
 
@@ -19,17 +18,10 @@ Analyzer::Analyzer() {
   int activeAreaRepeats = 1;
   double ghostArea = 0.01;
   double ghostEtaMax = 7.0;
-  activeArea = new GhostedAreaSpec(ghostEtaMax,activeAreaRepeats,ghostArea);
-  areaDef = new AreaDefinition(fastjet::active_area_explicit_ghosts,*activeArea);
+  activeArea = new fastjet::GhostedAreaSpec(ghostEtaMax,activeAreaRepeats,ghostArea);
+  areaDef = new fastjet::AreaDefinition(fastjet::active_area_explicit_ghosts,*activeArea);
 
-  // energy correlators
-  /*
-  for (auto beta : betas) {
-    for (auto N : Ns) {
-      ecfs[makeECFString(N,beta)] = new contrib::EnergyCorrelatorNormalized(N,beta,contrib::EnergyCorrelator::pt_R);
-    }
-  }
-  */
+  // everything else is created at the beginning of Run(), after configuration is done
 }
 
 Analyzer::~Analyzer() {
@@ -38,14 +30,6 @@ Analyzer::~Analyzer() {
 
   delete activeArea;
   delete areaDef;
-
-  /*
-  for (auto beta : betas) {
-    for (auto N : Ns) {
-      delete ecfs[makeECFString(N,beta)];
-    }
-  }
-  */
 
   for (auto *a : anajets) {
     delete a;
@@ -59,6 +43,9 @@ Analyzer::~Analyzer() {
 
   delete chs;
   delete puppi;
+
+  delete fitter;
+  delete fitresults;
 }
 
 void Analyzer::ResetBranches() {
@@ -146,7 +133,7 @@ void Analyzer::AddFatJetFromTree(TString inName, TString outName,PileupAlgo pu, 
 
   // set up fastjet
   anafatjet->jetDefCA = new fastjet::JetDefinition(fastjet::cambridge_algorithm, radius);
-  //anafatjet->jetDefAK = new fastjet::JetDefinition(fastjet::antikt_algorithm, radius);
+  anafatjet->jetDefAK = new fastjet::JetDefinition(fastjet::antikt_algorithm, radius);
   
   double sdZcut, sdBeta;
   if (radius<1) {
@@ -156,9 +143,8 @@ void Analyzer::AddFatJetFromTree(TString inName, TString outName,PileupAlgo pu, 
   }
   anafatjet->sd = new fastjet::contrib::SoftDrop(sdBeta,sdZcut,radius);
 
-  //anafatjet->tau = new contrib::Njettiness(contrib::Njettiness::onepass_kt_axes, contrib::NormalizedMeasure(1., radius));
-  contrib::OnePass_KT_Axes onepass;
-  anafatjet->tau = new contrib::Njettiness(onepass, contrib::NormalizedMeasure(1., radius));
+  fastjet::contrib::OnePass_KT_Axes onepass;
+  anafatjet->tau = new fastjet::contrib::Njettiness(onepass, fastjet::contrib::NormalizedMeasure(1., radius));
 
   // save fatjet
   anafatjets.push_back(anafatjet);
@@ -193,8 +179,6 @@ void Analyzer::Terminate() {
 //  delete ak8unc;
 }
 
-// fastjet-specific functions
-
 VPseudoJet Analyzer::ConvertFatJet(PFatJet *pfatjet, VPFCand *pfcands, double minPt) {
   VPseudoJet vpj;
   unsigned int nPF = pfatjet->constituents->size();
@@ -208,11 +192,6 @@ VPseudoJet Analyzer::ConvertFatJet(PFatJet *pfatjet, VPFCand *pfcands, double mi
   return vpj;
 }
 
-bool orderPseudoJet(PseudoJet j1, PseudoJet j2) {
-  // to be used to order pseudojets in decreasing pT order
-  return j1.perp2() > j2.perp2();
-}
-
 // run
 void Analyzer::Run() {
 
@@ -223,6 +202,12 @@ void Analyzer::Run() {
   if (!fOut || !tIn) {
     PError("SCRAMJetAnalyzer::Run","NOT SETUP CORRECTLY");
     exit(1);
+  }
+
+  // initialize kinematic fit
+  if (doKinFit) {
+    fitter = new KinematicFitter();
+    fitresults = new FitResults();
   }
 
   TStopwatch *sw = 0;
@@ -295,7 +280,6 @@ void Analyzer::Run() {
               }
             }
           } // looking for W
-          // PGenParticle *genW = gen->at(iW);
 
           // now look for b or W->qq
           int iB=-1, iQ1=-1, iQ2=-1;
@@ -373,6 +357,7 @@ void Analyzer::Run() {
 
       int nJets = injets->size();
       for (int iJ=0; iJ!=nJets; ++iJ) {
+        outjet->reset();
         PJet *pjet = injets->at(iJ);
         outjet->read(pjet);
         outjet->idx = iJ;
@@ -390,6 +375,7 @@ void Analyzer::Run() {
 
       int nJets = injets->size();
       for (int iJ=0; iJ!=nJets; ++iJ) {
+        outjet->reset();
         PFatJet *pfatjet = injets->at(iJ);
         if (pfatjet->pt<minFatJetPt)
           continue;
@@ -408,61 +394,62 @@ void Analyzer::Run() {
         /////// fastjet ////////
         VPseudoJet vpj = ConvertFatJet(pfatjet,anafatjet->pfcands,0.1);
 
-        ClusterSequenceArea seqCA(vpj, *(anafatjet->jetDefCA), *areaDef);
-        //ClusterSequenceArea seqAK(vpj, *(anafatjet->jetDefAK), *areaDef);
+        fastjet::ClusterSequenceArea seqCA(vpj, *(anafatjet->jetDefCA), *areaDef);
+        fastjet::ClusterSequenceArea seqAK(vpj, *(anafatjet->jetDefAK), *areaDef);
 
         VPseudoJet alljetsCA(seqCA.inclusive_jets(0.));
-        PseudoJet *leadingJetCA=0; 
+        fastjet::PseudoJet *leadingJetCA=0; 
         for (auto &jet : alljetsCA) {
           if (!leadingJetCA || jet.perp2()>leadingJetCA->perp2())
             leadingJetCA = &jet;
         }
 
-        /*
         VPseudoJet alljetsAK(seqAK.inclusive_jets(0.));
-        PseudoJet *leadingJetAK=0;
+        fastjet::PseudoJet *leadingJetAK=0;
         for (auto &jet : alljetsAK) {
           if (!leadingJetAK || jet.perp2()>leadingJetAK->perp2())
             leadingJetAK = &jet;
         }
-        */
         
-        if (leadingJetCA!=NULL /*|| leadingJetAK!=NULL*/) {
-          PseudoJet sdJetCA = (*anafatjet->sd)(*leadingJetCA);
-          //PseudoJet sdJetAK = (*anafatjet->sd)(*leadingJetAK);
+        if (leadingJetCA!=NULL || leadingJetAK!=NULL) {
+          fastjet::PseudoJet sdJetCA = (*anafatjet->sd)(*leadingJetCA);
+          fastjet::PseudoJet sdJetAK = (*anafatjet->sd)(*leadingJetAK);
           
           // get the constituents and sort them
           VPseudoJet sdConstituentsCA = sdJetCA.constituents();
           std::sort(sdConstituentsCA.begin(),sdConstituentsCA.end(),orderPseudoJet);
-          //VPseudoJet sdConstituentsAK = sdJetAK.constituents();
-          //std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
+
+          VPseudoJet sdConstituentsAK = sdJetAK.constituents();
+          std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
 
           /////////// let's calculate ECFs! ///////////
           double ecfn1=0, ecfn2=0, ecfn3=0, ecfn4=0;
 
           // filter the constituents
           int nFilter;
-          nFilter = TMath::Min(250,(int)sdConstituentsCA.size());
+          nFilter = TMath::Min(100,(int)sdConstituentsCA.size());
           VPseudoJet sdConstituentsCAFiltered(sdConstituentsCA.begin(),sdConstituentsCA.begin()+nFilter);
-          //nFilter = TMath::Min(250,(int)sdConstituentsAK.size());
-          //VPseudoJet sdConstituentsAKFiltered(sdConstituentsAK.begin(),sdConstituentsAK.begin()+nFilter);
+          nFilter = TMath::Min(100,(int)sdConstituentsAK.size());
+          VPseudoJet sdConstituentsAKFiltered(sdConstituentsAK.begin(),sdConstituentsAK.begin()+nFilter);
           
-          for (auto beta : betas) {
-            // first use CA
-            calcECFN(beta,sdConstituentsCAFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
-            outjet->ecfns["ecfNCA_"+makeECFString(1,beta)] = ecfn1;
-            outjet->ecfns["ecfNCA_"+makeECFString(2,beta)] = ecfn2;
-            outjet->ecfns["ecfNCA_"+makeECFString(3,beta)] = ecfn3;
-            outjet->ecfns["ecfNCA_"+makeECFString(4,beta)] = ecfn4;
+          if (doECF) {
+            for (auto beta : betas) {
+              // first use CA
+              calcECFN(beta,sdConstituentsCAFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
+              outjet->ecfns["ecfNCA_"+makeECFString(1,beta)] = ecfn1;
+              outjet->ecfns["ecfNCA_"+makeECFString(2,beta)] = ecfn2;
+              outjet->ecfns["ecfNCA_"+makeECFString(3,beta)] = ecfn3;
+              outjet->ecfns["ecfNCA_"+makeECFString(4,beta)] = ecfn4;
 
-            /*
-            // now AK
-            calcECFN(beta,sdConstituentsAKFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
-            outjet->ecfns["ecfNAK_"+makeECFString(1,beta)] = ecfn1;
-            outjet->ecfns["ecfNAK_"+makeECFString(2,beta)] = ecfn2;
-            outjet->ecfns["ecfNAK_"+makeECFString(3,beta)] = ecfn3;
-            outjet->ecfns["ecfNAK_"+makeECFString(4,beta)] = ecfn4;
-            */
+              // now AK
+              if (doAKSubstructure) {
+                calcECFN(beta,sdConstituentsAKFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
+                outjet->ecfns["ecfNAK_"+makeECFString(1,beta)] = ecfn1;
+                outjet->ecfns["ecfNAK_"+makeECFString(2,beta)] = ecfn2;
+                outjet->ecfns["ecfNAK_"+makeECFString(3,beta)] = ecfn3;
+                outjet->ecfns["ecfNAK_"+makeECFString(4,beta)] = ecfn4;
+              }
+            }
           }
 
           //////////// now let's do groomed tauN! /////////////
@@ -472,13 +459,62 @@ void Analyzer::Run() {
           outjet->tau32SD = tau3/tau2;
           outjet->tau21SD = tau2/tau1;
 
+          //////////// heat map! ///////////////
+          if (doHeatMap)
+            outjet->hmap = HeatMap(sdJetCA.eta(),sdJetCA.phi(),sdConstituentsCA,1.5,20,20);
+
+          //////////// subjet kinematics! /////////
+          VJet *subjets = pfatjet->subjets;
+          outjet->nsubjets=subjets->size();
+          std::vector<sjpair> sjpairs;
+          if (outjet->nsubjets>1) {
+            // first set up the pairs
+            double dR2 = DeltaR2(subjets->at(0),subjets->at(1));
+            double mW = Mjj(subjets->at(0),subjets->at(1));
+            sjpairs.emplace_back(dR2,mW);
+            if (outjet->nsubjets>2) {
+              dR2 = DeltaR2(subjets->at(0),subjets->at(2));
+              mW = Mjj(subjets->at(0),subjets->at(2));
+              sjpairs.emplace_back(dR2,mW);
+              dR2 = DeltaR2(subjets->at(1),subjets->at(2));
+              mW = Mjj(subjets->at(1),subjets->at(2));
+              sjpairs.emplace_back(dR2,mW);
+            }
+
+            // now order by dR
+            std::sort(sjpairs.begin(),sjpairs.end(),orderByDR);
+            outjet->dR2_minDR=sjpairs[0].dR2;
+            outjet->mW_minDR=sjpairs[0].mW;
+
+            // now by mW
+            std::sort(sjpairs.begin(),sjpairs.end(),orderByMW);
+            outjet->mW_best=sjpairs[0].mW;
+          }
+
+          //////////// kinematic fit! ///////////
+          if (doKinFit) {
+            PJet *sj1=0, *sj2=0, *sjb=0;
+            if (subjets->size()>=3) {
+              VJet leadingSubjets(subjets->begin(),subjets->begin()+3);
+              std::sort(leadingSubjets.begin(),leadingSubjets.end(),orderByCSV);
+              PerformKinFit(fitter,fitresults,leadingSubjets[1],leadingSubjets[2],leadingSubjets[0]); 
+              outjet->fitconv = (fitresults->converged) ? 1 : 0;
+              if (fitresults->converged) {
+                outjet->fitmass = fitresults->fitmass;
+                outjet->fitmassW = fitresults->fitmassW;
+                outjet->fitprob = fitresults->prob;
+                outjet->fitchi2 = fitresults->chisq;
+              }
+            }
+          }
+
+          /////// fill ////////
+          anafatjet->outtree->Fill();
         } else {
           //???
           PError("SCRAMJetAnalyzer::Run","No jet was clustered???");
         }
 
-        /////// fill ////////
-        anafatjet->outtree->Fill();
       } // loop over jets
     } // loop over jet collections
 
