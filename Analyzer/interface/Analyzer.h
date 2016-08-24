@@ -16,14 +16,33 @@
 
 #include "PandaCore/Tools/interface/Common.h"
 
+#include "EnergyCorrelations.h"
+
 #include "vector"
 #include "map"
 #include <string>
+
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/JetDefinition.hh"
+#include "fastjet/GhostedAreaSpec.hh"
+#include "fastjet/AreaDefinition.hh"
+#include "fastjet/ClusterSequenceArea.hh"
+#include "fastjet/contrib/SoftDrop.hh"
+#include "fastjet/contrib/NjettinessPlugin.hh"
+#include "fastjet/contrib/MeasureDefinition.hh"
+//#include "fastjet/contrib/EnergyCorrelator.hh"
 
 //#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 //#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
+//std::vector<double> betas = {0.1, 0.5, 1.0, 2.0};
+std::vector<double> betas = {0.1, 1.0, 2.0};
+std::vector<int> Ns = {1,2,3,4}; // only used for making branches and stuff
+
+TString makeECFString(int N, double beta) {
+  return TString::Format("%i_%.2i",N,(int)(10*beta));
+}
 
 class Analyzer {
 public :
@@ -49,7 +68,7 @@ public :
   ///////////////////////////////////////////////////////////////////////////////////
   // object classes used for writing the tree 
   // only defined for objects that will have many flavors
-  // e.g. puppi/chs, radius, etc
+  // e.g. puppi/chs, radius, algorithm, etc
 
   class JetWriter {
   public:
@@ -92,6 +111,17 @@ public :
       t->Branch("genpt",&genpt,"genpt/f");
       t->Branch("idx",&idx,"idx/I");
       t->Branch("matched",&matched,"matched/I");
+      t->Branch("tau32SD",&tau32SD,"tau32SD/f");
+      t->Branch("tau21SD",&tau21SD,"tau21SD/f");
+      for (auto beta : betas) {
+        for (auto N : Ns) {
+          TString ecfname;
+          ecfname = "ecfNCA_"+makeECFString(N,beta);
+          t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+//          ecfname = "ecfNAK_"+makeECFString(N,beta);
+//          t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+        }
+      }
     }
     void read(const scramjet::PFatJet *j) {
       // read some basic floats from j
@@ -109,10 +139,22 @@ public :
       pt=-1; eta=999; phi=999; m=-1; rawpt=-1; maxcsv=-1; mincsv=-1;
       mSD=-1; tau32=-1; tau21=-1; gensize=-1; genpt=-1;
       idx=-1; matched=-1; 
+      tau32SD=-1; tau21SD=-1;
+      // ecfs
+      for (auto beta : betas) {
+        for (auto N : Ns) {
+          ecfns["ecfNCA_"+makeECFString(N,beta)] = -1;
+//          ecfns["ecfNAK_"+makeECFString(N,beta)] = -1;
+        }
+      }
     }
     float pt=0, eta=0, phi=0, m=0, rawpt=0, maxcsv=0, mincsv=0;
     float mSD=0, tau32=0, tau21=0, gensize=0, genpt=0;
     int idx=-1, matched=-1; 
+    float tau32SD=0, tau21SD=0;
+    // ecfs
+    std::map<TString,float> ecfns;
+
   };
 
   //////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +167,10 @@ public :
   class AnaJet {
   public:
     AnaJet () {}
-    ~AnaJet() {}
+    ~AnaJet() {
+      delete outjet;
+      delete injets;
+    }
     JetWriter *outjet=0;
     scramjet::VJet *injets=0;
     TTree *outtree;
@@ -134,13 +179,26 @@ public :
   class AnaFatJet {
   public:
     AnaFatJet () {}
-    ~AnaFatJet() {}
+    ~AnaFatJet() {
+      delete outjet;
+      delete injets;
+      delete jetDefCA;
+      delete jetDefAK;
+      delete sd;
+      delete tau;
+    }
     FatJetWriter *outjet=0;
     scramjet::VFatJet *injets=0;
     scramjet::VPFCand *pfcands=0;
     double radius=0;
     ClusterAlgo algo=kCA;
     TTree *outtree;
+
+    // fastjet stuff
+    fastjet::JetDefinition *jetDefCA=0;
+    fastjet::JetDefinition *jetDefAK=0;
+    fastjet::contrib::SoftDrop *sd=0;
+    fastjet::contrib::Njettiness *tau=0;
   };
 
   //////////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +221,8 @@ public :
   double minFatJetPt=250;                    // min fatjet pt
 
 private:
+
+  std::vector<fastjet::PseudoJet> ConvertFatJet(scramjet::PFatJet*,scramjet::VPFCand*, double minPt=0.01);
 
 //  JetCorrectorParameters *ak8jec=0;
 //  JetCorrectionUncertainty *ak8unc=0;
@@ -188,9 +248,16 @@ private:
   ULong64_t eventNumber; 
   float mcWeight;
 
+  fastjet::AreaDefinition *areaDef=0;
+  fastjet::GhostedAreaSpec *activeArea=0;
+
+  // energy correlators
+  //std::map<TString,fastjet::contrib::EnergyCorrelatorNormalized*> ecfs; // "%i_%.1f"%(N,beta) => ecf
+};
+
+typedef std::vector<fastjet::PseudoJet> VPseudoJet;
   
 
-};
 
 #endif
 

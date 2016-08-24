@@ -5,12 +5,14 @@ import ROOT as root
 from re import sub
 from sys import argv,exit
 from os import system,getenv
+from PandaCore.Tools.Load import *
 
 if __name__ == "__main__":
 
-  gROOT.LoadMacro("${CMSSW_BASE}/src/SCRAMJet/Analyzer/interface/Analyzer.h")
-  gSystem.Load('libSCRAMJetAnalyzer.so')
-  gSystem.Load('libSCRAMJetObjects.so')
+  Load('SCRAMJetAnalyzer','Analyzer')
+#  gROOT.LoadMacro("${CMSSW_BASE}/src/SCRAMJet/Analyzer/interface/Analyzer.h")
+#  gSystem.Load('libSCRAMJetAnalyzer.so')
+#  gSystem.Load('libSCRAMJetObjects.so')
   
   def fn(fullPath):
 
