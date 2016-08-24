@@ -5,7 +5,7 @@
 #include <TFile.h>
 #include <TMath.h>
 #include <TH1D.h>
-#include <TH2D.h>
+#include <TH2F.h>
 #include <TLorentzVector.h>
 
 #include "SCRAMJet/Objects/interface/PEvent.h"
@@ -17,6 +17,8 @@
 #include "PandaCore/Tools/interface/Common.h"
 
 #include "EnergyCorrelations.h"
+#include "HeatMap.h"
+#include "KinFitFunction.h"
 
 #include "vector"
 #include "map"
@@ -36,14 +38,61 @@
 //#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 //#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
-//std::vector<double> betas = {0.1, 0.5, 1.0, 2.0};
+/////////////////////////////////////////////////////////////////////////////
+// some misc definitions
+#define WMASS 80.4
+
 std::vector<double> betas = {0.1, 1.0, 2.0};
 std::vector<int> Ns = {1,2,3,4}; // only used for making branches and stuff
+
+class sjpair {
+  public:
+    sjpair(float dR2_, float mW_) {
+      dR2 = dR2_;
+      mW = mW_;
+    }
+    ~sjpair() {}
+  float dR2=-1;
+  float mW=-1;
+};
+
+bool orderByDR(sjpair p1, sjpair p2) {
+  // order in increasing dR order
+  return p1.dR2 < p2.dR2;
+}
+
+bool orderByMW(sjpair p1, sjpair p2) {
+  // order in increasing order of |mjj-mW|
+  return TMath::Abs(p1.mW-WMASS) < TMath::Abs(p2.mW-WMASS);
+}
 
 TString makeECFString(int N, double beta) {
   return TString::Format("%i_%.2i",N,(int)(10*beta));
 }
 
+bool orderPseudoJet(fastjet::PseudoJet j1, fastjet::PseudoJet j2) {
+  // to be used to order pseudojets in decreasing pT order
+  return j1.perp2() > j2.perp2();
+}
+
+bool orderByCSV(scramjet::PJet *j1, scramjet::PJet *j2) {
+  // order PJets by decreasing csv
+  return j1->csv > j2->csv;
+}
+
+double DeltaR2(scramjet::PJet *j1, scramjet::PJet *j2) {
+  return DeltaR2(j1->eta,j1->phi,j2->eta,j2->phi);
+}
+
+double Mjj(scramjet::PJet *j1, scramjet::PJet *j2) {
+  TLorentzVector v1,v2;
+  v1.SetPtEtaPhiM(j1->pt,j1->eta,j1->phi,j1->m);
+  v2.SetPtEtaPhiM(j2->pt,j2->eta,j2->phi,j2->m);
+  return (v1+v2).M();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Analyzer definition
 class Analyzer {
 public :
   // configuration enums
@@ -118,10 +167,20 @@ public :
           TString ecfname;
           ecfname = "ecfNCA_"+makeECFString(N,beta);
           t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
-//          ecfname = "ecfNAK_"+makeECFString(N,beta);
-//          t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+          ecfname = "ecfNAK_"+makeECFString(N,beta);
+          t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
         }
       }
+      t->Branch("heatmap",&hmap);
+      t->Branch("fitmass",&fitmass,"fitmass/f");
+      t->Branch("fitmassW",&fitmassW,"fitmassW/f");
+      t->Branch("fitprob",&fitprob,"fitprob/f");
+      t->Branch("fitchi2",&fitchi2,"fitchi2/f");
+      t->Branch("fitconv",&fitconv,"fitconv/I");
+      t->Branch("dR2_minDR",&dR2_minDR,"dR2_minDR/f");
+      t->Branch("mW_minDR",&mW_minDR,"mW_minDR/f");
+      t->Branch("mW_best",&mW_best,"mW_best/f");
+      t->Branch("nsubjets",&nsubjets,"nsubjets/I");
     }
     void read(const scramjet::PFatJet *j) {
       // read some basic floats from j
@@ -139,21 +198,37 @@ public :
       pt=-1; eta=999; phi=999; m=-1; rawpt=-1; maxcsv=-1; mincsv=-1;
       mSD=-1; tau32=-1; tau21=-1; gensize=-1; genpt=-1;
       idx=-1; matched=-1; 
+      //substructure
       tau32SD=-1; tau21SD=-1;
-      // ecfs
       for (auto beta : betas) {
         for (auto N : Ns) {
           ecfns["ecfNCA_"+makeECFString(N,beta)] = -1;
-//          ecfns["ecfNAK_"+makeECFString(N,beta)] = -1;
+          ecfns["ecfNAK_"+makeECFString(N,beta)] = -1;
         }
       }
+      if (hmap) {
+        hmap->Delete(); hmap=0;
+      }
+      //kinematic fit
+      fitmass=-1; fitmassW=-1; fitprob=-1;
+      fitchi2=-1; fitconv=-1;
+      //subjet kinematics
+      dR2_minDR=-1; mW_minDR=0; mW_best=0;
+      nsubjets=-1;
     }
     float pt=0, eta=0, phi=0, m=0, rawpt=0, maxcsv=0, mincsv=0;
     float mSD=0, tau32=0, tau21=0, gensize=0, genpt=0;
     int idx=-1, matched=-1; 
+    // custom substructure
     float tau32SD=0, tau21SD=0;
-    // ecfs
     std::map<TString,float> ecfns;
+    TH2F *hmap=0;
+    //kinematic fit
+    float fitmass=0, fitmassW=0, fitprob=0, fitchi2=0;
+    int fitconv=0;
+    //subjet kinematics
+    float dR2_minDR=0, mW_minDR=0, mW_best=0;
+    int nsubjets=0;
 
   };
 
@@ -205,7 +280,6 @@ public :
 
   Analyzer();
   ~Analyzer();
-  // void SetDataDir(const char *s);
   void Init(TTree *tree);
   void SetOutputFile(TString fOutName);
   void ResetBranches();
@@ -216,9 +290,15 @@ public :
 
   // public configuration
   bool isData=false;                         // to do gen matching, etc
-  ProcessType processType=kNone;             // determine what to do the jet matching to
   int maxEvents=-1;                          // max events to process; -1=>all
   double minFatJetPt=250;                    // min fatjet pt
+  ProcessType processType=kNone;             // determine what to do the jet matching to
+
+  bool doECF=false;
+  bool doQjets=false;
+  bool doKinFit=false;
+  bool doHeatMap=false;
+  bool doAKSubstructure=false;
 
 private:
 
@@ -248,11 +328,14 @@ private:
   ULong64_t eventNumber; 
   float mcWeight;
 
+  // fastjet
   fastjet::AreaDefinition *areaDef=0;
   fastjet::GhostedAreaSpec *activeArea=0;
 
-  // energy correlators
-  //std::map<TString,fastjet::contrib::EnergyCorrelatorNormalized*> ecfs; // "%i_%.1f"%(N,beta) => ecf
+  // kin fit
+  KinematicFitter *fitter=0;
+  FitResults *fitresults=0;
+
 };
 
 typedef std::vector<fastjet::PseudoJet> VPseudoJet;
