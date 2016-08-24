@@ -7,28 +7,52 @@
 
 #define DEBUG 0
 using namespace scramjet;
+using namespace fastjet;
 using namespace std;
 
 Analyzer::Analyzer() {
   // load bare minumum objects to read
   event = new PEvent();
   gen = new VGenParticle();
+
+  // set up fastjet
+  int activeAreaRepeats = 1;
+  double ghostArea = 0.01;
+  double ghostEtaMax = 7.0;
+  activeArea = new GhostedAreaSpec(ghostEtaMax,activeAreaRepeats,ghostArea);
+  areaDef = new AreaDefinition(fastjet::active_area_explicit_ghosts,*activeArea);
+
+  // energy correlators
+  /*
+  for (auto beta : betas) {
+    for (auto N : Ns) {
+      ecfs[makeECFString(N,beta)] = new contrib::EnergyCorrelatorNormalized(N,beta,contrib::EnergyCorrelator::pt_R);
+    }
+  }
+  */
 }
 
 Analyzer::~Analyzer() {
   delete event;
   delete gen;
 
+  delete activeArea;
+  delete areaDef;
+
+  /*
+  for (auto beta : betas) {
+    for (auto N : Ns) {
+      delete ecfs[makeECFString(N,beta)];
+    }
+  }
+  */
+
   for (auto *a : anajets) {
-    delete a->injets;
-    delete a->outjet;
     delete a;
   }
   anajets.clear();
 
   for (auto *a : anafatjets) {
-    delete a->injets;
-    delete a->outjet;
     delete a;
   }
   anafatjets.clear();
@@ -71,13 +95,15 @@ void Analyzer::Init(TTree *t)
   if (!t) return;
   tIn = t;
   t->SetBranchAddress("event",&event);
+  t->SetBranchAddress("puppicands",&puppi);
+  t->SetBranchAddress("pfcands",&chs);
   if (!isData)
     t->SetBranchAddress("gen",&gen); 
 }
 
 void Analyzer::AddJetFromTree(TString inName, TString outName) {
   if (!tIn) {
-    PError("[SCRAMJetAnalyzer::AddJetFromTree]","Input tree not set!");
+    PError("SCRAMJetAnalyzer::AddJetFromTree","Input tree not set!");
   }
   AnaJet *anajet = new AnaJet();
   
@@ -97,25 +123,44 @@ void Analyzer::AddJetFromTree(TString inName, TString outName) {
 
 void Analyzer::AddFatJetFromTree(TString inName, TString outName,PileupAlgo pu, double radius, ClusterAlgo algo) {
   if (!tIn) {
-    PError("[SCRAMJetAnalyzer::AddFatJetFromTree]","Input tree not set!");
+    PError("SCRAMJetAnalyzer::AddFatJetFromTree","Input tree not set!");
   }
   AnaFatJet *anafatjet = new AnaFatJet();
   
+  // get from tree
   anafatjet->injets =0; //= new VFatJet();
   tIn->SetBranchAddress(inName,&anafatjet->injets);
 
+  // set up output
   fOut->cd();
   TTree *outtree = new TTree(outName.Data(),outName.Data());
   anafatjet->outtree = outtree;
   AddEventBranches(outtree);
-
   FatJetWriter *outjet = new FatJetWriter(outtree);
   anafatjet->outjet = outjet;
 
+  // configure
   anafatjet->radius = radius;
   anafatjet->algo = algo;
-  anafatjet->pfcands = puppi;
+  anafatjet->pfcands = (pu==kPuppi) ? puppi : chs;
 
+  // set up fastjet
+  anafatjet->jetDefCA = new fastjet::JetDefinition(fastjet::cambridge_algorithm, radius);
+  //anafatjet->jetDefAK = new fastjet::JetDefinition(fastjet::antikt_algorithm, radius);
+  
+  double sdZcut, sdBeta;
+  if (radius<1) {
+    sdZcut=0.1; sdBeta=0.;
+  } else {
+    sdZcut=0.15; sdBeta=1.;
+  }
+  anafatjet->sd = new fastjet::contrib::SoftDrop(sdBeta,sdZcut,radius);
+
+  //anafatjet->tau = new contrib::Njettiness(contrib::Njettiness::onepass_kt_axes, contrib::NormalizedMeasure(1., radius));
+  contrib::OnePass_KT_Axes onepass;
+  anafatjet->tau = new contrib::Njettiness(onepass, contrib::NormalizedMeasure(1., radius));
+
+  // save fatjet
   anafatjets.push_back(anafatjet);
 }
 
@@ -148,6 +193,27 @@ void Analyzer::Terminate() {
 //  delete ak8unc;
 }
 
+// fastjet-specific functions
+
+VPseudoJet Analyzer::ConvertFatJet(PFatJet *pfatjet, VPFCand *pfcands, double minPt) {
+  VPseudoJet vpj;
+  unsigned int nPF = pfatjet->constituents->size();
+  for (unsigned int iPF=0; iPF!=nPF; ++iPF) {
+    PPFCand *thispf = pfatjet->getPFCand(iPF,pfcands);
+    if (thispf->pt<minPt)
+      continue;
+    TLorentzVector mom; mom.SetPtEtaPhiM(thispf->pt,thispf->eta,thispf->phi,thispf->m);
+    vpj.emplace_back(mom.Px(),mom.Py(),mom.Pz(),mom.E());
+  }
+  return vpj;
+}
+
+bool orderPseudoJet(PseudoJet j1, PseudoJet j2) {
+  // to be used to order pseudojets in decreasing pT order
+  return j1.perp2() > j2.perp2();
+}
+
+// run
 void Analyzer::Run() {
 
   unsigned int nEvents = tIn->GetEntries();
@@ -310,9 +376,8 @@ void Analyzer::Run() {
         PJet *pjet = injets->at(iJ);
         outjet->read(pjet);
         outjet->idx = iJ;
+        anajet->outtree->Fill();
       } // loop over jets
-
-      anajet->outtree->Fill();
     } // loop over jet collections
 
     if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2: %f",sw->RealTime()*1000)); sw->Start(); }
@@ -326,6 +391,8 @@ void Analyzer::Run() {
       int nJets = injets->size();
       for (int iJ=0; iJ!=nJets; ++iJ) {
         PFatJet *pfatjet = injets->at(iJ);
+        if (pfatjet->pt<minFatJetPt)
+          continue;
         outjet->read(pfatjet);
         outjet->idx = iJ;
 
@@ -337,9 +404,82 @@ void Analyzer::Run() {
         } else { 
           outjet->matched = 0; 
         }
-      } // loop over jets
 
-      anafatjet->outtree->Fill();
+        /////// fastjet ////////
+        VPseudoJet vpj = ConvertFatJet(pfatjet,anafatjet->pfcands,0.1);
+
+        ClusterSequenceArea seqCA(vpj, *(anafatjet->jetDefCA), *areaDef);
+        //ClusterSequenceArea seqAK(vpj, *(anafatjet->jetDefAK), *areaDef);
+
+        VPseudoJet alljetsCA(seqCA.inclusive_jets(0.));
+        PseudoJet *leadingJetCA=0; 
+        for (auto &jet : alljetsCA) {
+          if (!leadingJetCA || jet.perp2()>leadingJetCA->perp2())
+            leadingJetCA = &jet;
+        }
+
+        /*
+        VPseudoJet alljetsAK(seqAK.inclusive_jets(0.));
+        PseudoJet *leadingJetAK=0;
+        for (auto &jet : alljetsAK) {
+          if (!leadingJetAK || jet.perp2()>leadingJetAK->perp2())
+            leadingJetAK = &jet;
+        }
+        */
+        
+        if (leadingJetCA!=NULL /*|| leadingJetAK!=NULL*/) {
+          PseudoJet sdJetCA = (*anafatjet->sd)(*leadingJetCA);
+          //PseudoJet sdJetAK = (*anafatjet->sd)(*leadingJetAK);
+          
+          // get the constituents and sort them
+          VPseudoJet sdConstituentsCA = sdJetCA.constituents();
+          std::sort(sdConstituentsCA.begin(),sdConstituentsCA.end(),orderPseudoJet);
+          //VPseudoJet sdConstituentsAK = sdJetAK.constituents();
+          //std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
+
+          /////////// let's calculate ECFs! ///////////
+          double ecfn1=0, ecfn2=0, ecfn3=0, ecfn4=0;
+
+          // filter the constituents
+          int nFilter;
+          nFilter = TMath::Min(250,(int)sdConstituentsCA.size());
+          VPseudoJet sdConstituentsCAFiltered(sdConstituentsCA.begin(),sdConstituentsCA.begin()+nFilter);
+          //nFilter = TMath::Min(250,(int)sdConstituentsAK.size());
+          //VPseudoJet sdConstituentsAKFiltered(sdConstituentsAK.begin(),sdConstituentsAK.begin()+nFilter);
+          
+          for (auto beta : betas) {
+            // first use CA
+            calcECFN(beta,sdConstituentsCAFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
+            outjet->ecfns["ecfNCA_"+makeECFString(1,beta)] = ecfn1;
+            outjet->ecfns["ecfNCA_"+makeECFString(2,beta)] = ecfn2;
+            outjet->ecfns["ecfNCA_"+makeECFString(3,beta)] = ecfn3;
+            outjet->ecfns["ecfNCA_"+makeECFString(4,beta)] = ecfn4;
+
+            /*
+            // now AK
+            calcECFN(beta,sdConstituentsAKFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
+            outjet->ecfns["ecfNAK_"+makeECFString(1,beta)] = ecfn1;
+            outjet->ecfns["ecfNAK_"+makeECFString(2,beta)] = ecfn2;
+            outjet->ecfns["ecfNAK_"+makeECFString(3,beta)] = ecfn3;
+            outjet->ecfns["ecfNAK_"+makeECFString(4,beta)] = ecfn4;
+            */
+          }
+
+          //////////// now let's do groomed tauN! /////////////
+          double tau3 = anafatjet->tau->getTau(3,sdConstituentsCA);
+          double tau2 = anafatjet->tau->getTau(2,sdConstituentsCA);
+          double tau1 = anafatjet->tau->getTau(1,sdConstituentsCA);
+          outjet->tau32SD = tau3/tau2;
+          outjet->tau21SD = tau2/tau1;
+
+        } else {
+          //???
+          PError("SCRAMJetAnalyzer::Run","No jet was clustered???");
+        }
+
+        /////// fill ////////
+        anafatjet->outtree->Fill();
+      } // loop over jets
     } // loop over jet collections
 
     if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 3: %f",sw->RealTime()*1000)); sw->Start(); }
