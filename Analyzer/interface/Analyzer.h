@@ -42,8 +42,9 @@
 // some misc definitions
 #define WMASS 80.4
 
-std::vector<double> betas = {0.1, 1.0, 2.0};
+std::vector<double> betas = {0.5, 1.0, 2.0};
 std::vector<int> Ns = {1,2,3,4}; // only used for making branches and stuff
+std::vector<int> orders = {1,2,3};
 
 class sjpair {
   public:
@@ -66,8 +67,8 @@ bool orderByMW(sjpair p1, sjpair p2) {
   return TMath::Abs(p1.mW-WMASS) < TMath::Abs(p2.mW-WMASS);
 }
 
-TString makeECFString(int N, double beta) {
-  return TString::Format("%i_%.2i",N,(int)(10*beta));
+TString makeECFString(int order, int N, double beta) {
+  return TString::Format("%i_%i_%.2i",order,N,(int)(10*beta));
 }
 
 bool orderPseudoJet(fastjet::PseudoJet j1, fastjet::PseudoJet j2) {
@@ -164,11 +165,10 @@ public :
       t->Branch("tau21SD",&tau21SD,"tau21SD/f");
       for (auto beta : betas) {
         for (auto N : Ns) {
-          TString ecfname;
-          ecfname = "ecfNCA_"+makeECFString(N,beta);
-          t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
-          ecfname = "ecfNAK_"+makeECFString(N,beta);
-          t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+          for (auto o : orders) {
+            TString ecfname = "ecfN_"+makeECFString(o,N,beta);
+            t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+          }
         }
       }
       t->Branch("heatmap",&hmap);
@@ -202,8 +202,9 @@ public :
       tau32SD=-1; tau21SD=-1;
       for (auto beta : betas) {
         for (auto N : Ns) {
-          ecfns["ecfNCA_"+makeECFString(N,beta)] = -1;
-          ecfns["ecfNAK_"+makeECFString(N,beta)] = -1;
+          for (auto o : orders) {
+            ecfns["ecfN_"+makeECFString(o,N,beta)] = -1;
+          }
         }
       }
       if (hmap) {

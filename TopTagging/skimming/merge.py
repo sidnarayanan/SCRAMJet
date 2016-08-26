@@ -85,12 +85,15 @@ def merge(shortnames,mergedname):
     hadd(inpath,'/tmp/%s/split/%s.root'%(user,shortname))
     if xsec>0:
       normalizeFast('/tmp/%s/split/%s.root'%(user,shortname),xsec,'puppiCA15')
-      normalizeFast('/tmp/%s/split/%s.root'%(user,shortname),xsec,'chsCA15')
+      #normalizeFast('/tmp/%s/split/%s.root'%(user,shortname),xsec,'chsCA15')
   hadd(['/tmp/%s/split/%s.root'%(user,x) for x in shortnames],'/tmp/%s/merged/%s.root'%(user,mergedname))
 
 
 args = {}
-d = { 'QCD' : ['QCD_ht%ito%i'%(b[0],b[1]) for b in [(200,300),(300,500),(500,700),(700,100),(1000,1500),(1500,2000)]] + ['QCD_ht2000toinf'] }
+d = { 
+  'QCD' : ['QCD_ht%ito%i'%(b[0],b[1]) for b in [(200,300),(300,500),(500,700),(700,100),(1000,1500)]]  
+  #'QCD' : ['QCD_ht%ito%i'%(b[0],b[1]) for b in [(200,300),(300,500),(500,700),(700,100),(1000,1500),(1500,2000)]] + ['QCD_ht2000toinf'] 
+  }
 
 for pd in argv[1:]:
   try:

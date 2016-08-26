@@ -22,7 +22,7 @@ if __name__ == "__main__":
     skimmer.isData=False
     skimmer.doHeatMap=False
     skimmer.doECF=True
-    skimmer.doKinFit=True
+    skimmer.doKinFit=False
     if 'TT' in fullPath:
       skimmer.processType = root.Analyzer.kTop
     elif 'WW' in fullPath:

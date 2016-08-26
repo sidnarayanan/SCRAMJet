@@ -210,6 +210,9 @@ void Analyzer::Run() {
     fitresults = new FitResults();
   }
 
+  // initialize ECFN calculation
+  ECFNManager *ecfnmanager = new ECFNManager(); // default is everything is on
+
   TStopwatch *sw = 0;
   if (DEBUG) sw = new TStopwatch();
   unsigned int iE=0;
@@ -423,32 +426,27 @@ void Analyzer::Run() {
           std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
 
           /////////// let's calculate ECFs! ///////////
-          double ecfn1=0, ecfn2=0, ecfn3=0, ecfn4=0;
 
           // filter the constituents
           int nFilter;
           nFilter = TMath::Min(100,(int)sdConstituentsCA.size());
           VPseudoJet sdConstituentsCAFiltered(sdConstituentsCA.begin(),sdConstituentsCA.begin()+nFilter);
-          nFilter = TMath::Min(100,(int)sdConstituentsAK.size());
-          VPseudoJet sdConstituentsAKFiltered(sdConstituentsAK.begin(),sdConstituentsAK.begin()+nFilter);
           
           if (doECF) {
             for (auto beta : betas) {
-              // first use CA
-              calcECFN(beta,sdConstituentsCAFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
-              outjet->ecfns["ecfNCA_"+makeECFString(1,beta)] = ecfn1;
-              outjet->ecfns["ecfNCA_"+makeECFString(2,beta)] = ecfn2;
-              outjet->ecfns["ecfNCA_"+makeECFString(3,beta)] = ecfn3;
-              outjet->ecfns["ecfNCA_"+makeECFString(4,beta)] = ecfn4;
-
-              // now AK
-              if (doAKSubstructure) {
-                calcECFN(beta,sdConstituentsAKFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
-                outjet->ecfns["ecfNAK_"+makeECFString(1,beta)] = ecfn1;
-                outjet->ecfns["ecfNAK_"+makeECFString(2,beta)] = ecfn2;
-                outjet->ecfns["ecfNAK_"+makeECFString(3,beta)] = ecfn3;
-                outjet->ecfns["ecfNAK_"+makeECFString(4,beta)] = ecfn4;
+              calcECFN(beta,sdConstituentsCAFiltered,ecfnmanager);
+              for (auto N : Ns) {
+                for (auto o : orders) {
+                  outjet->ecfns["ecfN_"+makeECFString(o,N,beta)] = ecfnmanager->ecfns[TString::Format("%i_%i",N,o)];
+                }
               }
+              /*
+              calcECFN(beta,sdConstituentsCAFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
+              outjet->ecfns["ecfN_"+makeECFString(1,beta)] = ecfn1;
+              outjet->ecfns["ecfN_"+makeECFString(2,beta)] = ecfn2;
+              outjet->ecfns["ecfN_"+makeECFString(3,beta)] = ecfn3;
+              outjet->ecfns["ecfN_"+makeECFString(4,beta)] = ecfn4;
+              */
             }
           }
 

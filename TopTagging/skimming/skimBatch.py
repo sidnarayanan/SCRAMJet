@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from PandaCore.Tools.MultiThreading import GenericRunner
 from ROOT import gSystem,gROOT
 import ROOT as root
 from PandaCore.Tools.Misc import *
@@ -9,17 +8,19 @@ from sys import argv,exit
 from os import system,getenv,path
 from json import load as loadJson
 from time import clock
+from PandaCore.Tools.MultiThreading import GenericRunner
+from PandaCore.Tools.Load import *
 
 nPerJob = int(argv[2])
 sname = argv[0]
 
 if __name__ == "__main__":
   
-  gROOT.LoadMacro("${CMSSW_BASE}/src/SCRAMJet/Analyzer/interface/Analyzer.h")
-  gSystem.Load('libSCRAMJetAnalyzer.so')
-  gSystem.Load('libSCRAMJetObjects.so')
+  Load('SCRAMJetAnalyzer','Analyzer')
 
   def fn(shortName,longName,counter,xsec,isData,outPath=None):
+    if outPath:
+      system('touch %s/%s_%i.lock'%(outPath,shortName,counter))
     start=clock()
 
     eosPath = 'root://eoscms//eos/cms/store/user/%s'%(getenv('USER'))
@@ -30,6 +31,9 @@ if __name__ == "__main__":
 
     skimmer = root.Analyzer()
     skimmer.isData=False
+    skimmer.doHeatMap=False
+    skimmer.doECF=True
+    skimmer.doKinFit=True
 
     if 'TT' in fullPath:
       skimmer.processType=root.Analyzer.kTop
@@ -44,7 +48,7 @@ if __name__ == "__main__":
     skimmer.SetOutputFile('%s_%i.root'%(shortName,counter))
     skimmer.Init(tree)
     skimmer.AddFatJetFromTree("puppiCA15","puppiCA15",root.Analyzer.kPuppi,1.5,root.Analyzer.kCA)
-    skimmer.AddFatJetFromTree("chsCA15","chsCA15",root.Analyzer.kCHS,1.5,root.Analyzer.kCA)
+#    skimmer.AddFatJetFromTree("chsCA15","chsCA15",root.Analyzer.kCHS,1.5,root.Analyzer.kCA)
 
     skimmer.Run()
     skimmer.Terminate()
