@@ -7,6 +7,7 @@ from sys import argv,exit
 from os import system,getenv,path
 from json import load as loadJson
 from time import clock
+from random import shuffle
 from PandaCore.Tools.Misc import *
 from PandaCore.Tools.MultiThreading import GenericRunner
 from PandaCore.Tools.Load import *
@@ -18,9 +19,14 @@ if __name__ == "__main__":
   
   Load('SCRAMJetAnalyzer','Analyzer')
 
-  def fn(shortName,longName,counter,xsec,isData,outPath=None):
-    if outPath:
-      system('touch %s/%s_%i.lock'%(outPath,shortName,counter))
+  def fn(shortName,longName,counter,xsec,isData,outPath):
+    outfileName = '%s_%i'%(shortName,counter)
+    if path.isfile(outPath+'/'+outfileName+'.lock'):
+      return # another job is processing this file
+    if path.isfile(outPath+'/'+outfileName+'.root'):
+      return # another job has processed this file
+
+    system('touch %s/%s.lock'%(outPath,outfileName))
     start=clock()
 
     eosPath = 'root://eoscms//eos/cms/store/user/%s'%(getenv('USER'))
@@ -53,11 +59,12 @@ if __name__ == "__main__":
     skimmer.Run()
     skimmer.Terminate()
 
-    if outPath:
-      mvcmd = 'mv %s_%i.root %s'%(shortName,counter,outPath)
-      PInfo(sname,mvcmd)
-      system(mvcmd)
-      PInfo(sname,'moved output %f'%(clock()-start)); start=clock()
+    mvcmd = 'mv %s_%i.root %s'%(shortName,counter,outPath)
+    PInfo(sname,mvcmd)
+    system(mvcmd)
+    system('rm %s/%s.lock'%(outPath,outfileName))
+
+    PInfo(sname,'finished in %f'%(clock()-start)); start=clock()
 
   
   gr = GenericRunner(fn)
@@ -74,6 +81,7 @@ if __name__ == "__main__":
       else:
         argList.append([ll[0],ll[3],counter,float(ll[2]),isData,argv[3]])
     counter+=1
+  shuffle(argList)
   gr.setArgList(argList)
   gr.run(4)
 

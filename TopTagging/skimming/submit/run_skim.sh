@@ -5,7 +5,8 @@ nPerJob=$3
 WD=${PWD}
 pwd
 
-executable=skimBatch.py
+executable=skimEfficient.py
+#executable=skimBatch.py
 
 scramdir=/afs/cern.ch/user/s/snarayan/work/private/scramjet/CMSSW_8_0_11/
 cd ${scramdir}/src/

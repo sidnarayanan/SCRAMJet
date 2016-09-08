@@ -234,7 +234,7 @@ void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNMa
           angles[2] = dRs[jC][kC];
 
           for (unsigned int lC=0; lC!=kC; ++lC) {
-            angles[3] = dRs[jC][kC];
+            angles[3] = dRs[iC][lC];
             angles[4] = dRs[jC][lC];
             angles[5] = dRs[kC][lC];
 

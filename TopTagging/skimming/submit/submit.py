@@ -4,7 +4,8 @@ from os import system,environ
 from sys import exit,stdout
 
 scramdir=environ['CMSSW_BASE']
-cfgName='small_rnd'
+cfgName='small'
+#cfgName='small_rnd'
 nPerJob=4
 queue = '2nw4cores' 
 #queue = '1nh'

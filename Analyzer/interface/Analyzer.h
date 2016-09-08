@@ -32,7 +32,7 @@
 #include "fastjet/contrib/SoftDrop.hh"
 #include "fastjet/contrib/NjettinessPlugin.hh"
 #include "fastjet/contrib/MeasureDefinition.hh"
-//#include "fastjet/contrib/EnergyCorrelator.hh"
+#include "fastjet/contrib/EnergyCorrelator.hh"
 
 //#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
