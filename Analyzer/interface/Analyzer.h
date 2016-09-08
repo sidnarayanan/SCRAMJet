@@ -16,6 +16,7 @@
 
 #include "PandaCore/Tools/interface/Common.h"
 
+#include "QjetsFunctions.h"
 #include "EnergyCorrelations.h"
 #include "HeatMap.h"
 #include "KinFitFunction.h"
@@ -181,6 +182,10 @@ public :
       t->Branch("mW_minDR",&mW_minDR,"mW_minDR/f");
       t->Branch("mW_best",&mW_best,"mW_best/f");
       t->Branch("nsubjets",&nsubjets,"nsubjets/I");
+      t->Branch("qmass",&qmass,"qmass/f");
+      t->Branch("qpt",&qpt,"qpt/f");
+      t->Branch("qtau32",&qtau32,"qtau32/f");
+      t->Branch("qtau21",&qtau21,"qtau21/f");
     }
     void read(const scramjet::PFatJet *j) {
       // read some basic floats from j
@@ -216,6 +221,9 @@ public :
       //subjet kinematics
       dR2_minDR=-1; mW_minDR=0; mW_best=0;
       nsubjets=-1;
+      //qjets
+      qmass=-1; qpt=-1;
+      qtau32=-1; qtau21=-1;
     }
     float pt=0, eta=0, phi=0, m=0, rawpt=0, maxcsv=0, mincsv=0;
     float mSD=0, tau32=0, tau21=0, gensize=0, genpt=0;
@@ -230,6 +238,9 @@ public :
     //subjet kinematics
     float dR2_minDR=0, mW_minDR=0, mW_best=0;
     int nsubjets=0;
+    //qjets
+    float qmass=0,qpt=0;
+    float qtau32=0,qtau21=0;
 
   };
 
@@ -336,6 +347,10 @@ private:
   // kin fit
   KinematicFitter *fitter=0;
   FitResults *fitresults=0;
+
+  // qjets
+  qjets::QjetsPlugin *qplugin=0;
+  fastjet::JetDefinition *qdef=0;
 
 };
 

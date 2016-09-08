@@ -46,6 +46,9 @@ Analyzer::~Analyzer() {
 
   delete fitter;
   delete fitresults;
+
+  delete qplugin;
+  delete qdef;
 }
 
 void Analyzer::ResetBranches() {
@@ -195,6 +198,8 @@ VPseudoJet Analyzer::ConvertFatJet(PFatJet *pfatjet, VPFCand *pfcands, double mi
 // run
 void Analyzer::Run() {
 
+  // INITIALIZE --------------------------------------------------------------------------
+  
   unsigned int nEvents = tIn->GetEntries();
   if (maxEvents>=0 && maxEvents<(int)nEvents)
     nEvents = maxEvents;
@@ -213,12 +218,20 @@ void Analyzer::Run() {
   // initialize ECFN calculation
   ECFNManager *ecfnmanager = new ECFNManager(); // default is everything is on
 
+  // initialize qjets
+  if (doQjets) {
+    qplugin = new qjets::QjetsPlugin(0.1,0.5,0.,0.,0.1,0.);
+    qdef = new fastjet::JetDefinition(qplugin);
+  }
+  int qcounter=0;
+
   TStopwatch *sw = 0;
   if (DEBUG) sw = new TStopwatch();
   unsigned int iE=0;
   ProgressReporter pr("SCRAMJetAnalyzer::Run",&iE,&nEvents,10);
   hDTotalMCWeight->Reset();
 
+  // EVENTLOOP --------------------------------------------------------------------------
   for (iE=0; iE!=nEvents; ++iE) {
     if (DEBUG) sw->Start(true);
     pr.Report();
@@ -394,6 +407,8 @@ void Analyzer::Run() {
           outjet->matched = 0; 
         }
 
+        if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.1: %f",sw->RealTime()*1000)); sw->Start(); }
+
         /////// fastjet ////////
         VPseudoJet vpj = ConvertFatJet(pfatjet,anafatjet->pfcands,0.1);
 
@@ -414,6 +429,8 @@ void Analyzer::Run() {
             leadingJetAK = &jet;
         }
         
+        if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.2: %f",sw->RealTime()*1000)); sw->Start(); }
+
         if (leadingJetCA!=NULL || leadingJetAK!=NULL) {
           fastjet::PseudoJet sdJetCA = (*anafatjet->sd)(*leadingJetCA);
           fastjet::PseudoJet sdJetAK = (*anafatjet->sd)(*leadingJetAK);
@@ -424,6 +441,8 @@ void Analyzer::Run() {
 
           VPseudoJet sdConstituentsAK = sdJetAK.constituents();
           std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
+
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.3: %f",sw->RealTime()*1000)); sw->Start(); }
 
           /////////// let's calculate ECFs! ///////////
 
@@ -440,15 +459,10 @@ void Analyzer::Run() {
                   outjet->ecfns["ecfN_"+makeECFString(o,N,beta)] = ecfnmanager->ecfns[TString::Format("%i_%i",N,o)];
                 }
               }
-              /*
-              calcECFN(beta,sdConstituentsCAFiltered,&ecfn1,&ecfn2,&ecfn3,&ecfn4,false);
-              outjet->ecfns["ecfN_"+makeECFString(1,beta)] = ecfn1;
-              outjet->ecfns["ecfN_"+makeECFString(2,beta)] = ecfn2;
-              outjet->ecfns["ecfN_"+makeECFString(3,beta)] = ecfn3;
-              outjet->ecfns["ecfN_"+makeECFString(4,beta)] = ecfn4;
-              */
             }
+            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.4: %f",sw->RealTime()*1000)); sw->Start(); }
           }
+
 
           //////////// now let's do groomed tauN! /////////////
           double tau3 = anafatjet->tau->getTau(3,sdConstituentsCA);
@@ -457,9 +471,33 @@ void Analyzer::Run() {
           outjet->tau32SD = tau3/tau2;
           outjet->tau21SD = tau2/tau1;
 
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.5: %f",sw->RealTime()*1000)); sw->Start(); }
+
+          //////////// Q-jet quantities ////////////////
+          if (doQjets) {
+            std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,15,anafatjet->tau);
+
+            JetQuantity getmass = [](qjetwrapper w) { return w.jet.m(); };
+            outjet->qmass = qVolQuantity(q_jets,getmass);
+
+            JetQuantity getpt= [](qjetwrapper w) { return w.jet.pt(); };
+            outjet->qpt = qVolQuantity(q_jets,getpt);
+
+            JetQuantity gettau32 = [](qjetwrapper w) { return w.tau32; };
+            outjet->qtau32 = qVolQuantity(q_jets,gettau32);
+
+            JetQuantity gettau21 = [](qjetwrapper w) { return w.tau21; };
+            outjet->qtau21 = qVolQuantity(q_jets,gettau21);
+
+            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.6: %f",sw->RealTime()*1000)); sw->Start(); }
+          }
+
           //////////// heat map! ///////////////
-          if (doHeatMap)
+          if (doHeatMap) {
             outjet->hmap = HeatMap(sdJetCA.eta(),sdJetCA.phi(),sdConstituentsCA,1.5,20,20);
+
+            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.7: %f",sw->RealTime()*1000)); sw->Start(); }
+          }
 
           //////////// subjet kinematics! /////////
           VJet *subjets = pfatjet->subjets;
@@ -489,6 +527,8 @@ void Analyzer::Run() {
             outjet->mW_best=sjpairs[0].mW;
           }
 
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.8: %f",sw->RealTime()*1000)); sw->Start(); }
+
           //////////// kinematic fit! ///////////
           if (doKinFit) {
             PJet *sj1=0, *sj2=0, *sjb=0;
@@ -504,6 +544,8 @@ void Analyzer::Run() {
                 outjet->fitchi2 = fitresults->chisq;
               }
             }
+            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.9: %f",sw->RealTime()*1000)); sw->Start(); }
+
           }
 
           /////// fill ////////

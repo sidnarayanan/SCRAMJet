@@ -20,8 +20,9 @@ if __name__ == "__main__":
    
     skimmer.maxEvents = 10
     skimmer.isData=False
-    skimmer.doHeatMap=False
+    skimmer.doHeatMap=True
     skimmer.doECF=True
+    skimmer.doQjets=True
     skimmer.doKinFit=False
     if 'TT' in fullPath:
       skimmer.processType = root.Analyzer.kTop
