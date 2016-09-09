@@ -40,6 +40,7 @@ if __name__ == "__main__":
     skimmer.doHeatMap=False
     skimmer.doECF=True
     skimmer.doKinFit=True
+    skimmer.doQjets=True
 
     if 'TT' in fullPath:
       skimmer.processType=root.Analyzer.kTop

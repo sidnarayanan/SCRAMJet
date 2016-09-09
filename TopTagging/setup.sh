@@ -8,4 +8,4 @@ histDir=scramjet
 export SCRAMJETHIST=${EOS}/$histDir
 
 #location of flat trees
-export SCRAMJETFLAT=${HOME}/work/skims/scramjet_v1/
+export SCRAMJETFLAT=${HOME}/work/skims/scramjet_v2/
