@@ -1,6 +1,12 @@
 #ifndef Analyzer_h
 #define Analyzer_h
 
+// STL
+#include "vector"
+#include "map"
+#include <string>
+
+// ROOT
 #include <TTree.h>
 #include <TFile.h>
 #include <TMath.h>
@@ -8,23 +14,7 @@
 #include <TH2F.h>
 #include <TLorentzVector.h>
 
-#include "SCRAMJet/Objects/interface/PEvent.h"
-#include "SCRAMJet/Objects/interface/PPFCand.h"
-#include "SCRAMJet/Objects/interface/PJet.h"
-#include "SCRAMJet/Objects/interface/PFatJet.h"
-#include "SCRAMJet/Objects/interface/PGenParticle.h"
-
-#include "PandaCore/Tools/interface/Common.h"
-
-#include "QjetsFunctions.h"
-#include "EnergyCorrelations.h"
-#include "HeatMap.h"
-#include "KinFitFunction.h"
-
-#include "vector"
-#include "map"
-#include <string>
-
+// fastjet
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/GhostedAreaSpec.hh"
@@ -35,6 +25,24 @@
 #include "fastjet/contrib/MeasureDefinition.hh"
 #include "fastjet/contrib/EnergyCorrelator.hh"
 
+// SCRAMJet Objects
+#include "SCRAMJet/Objects/interface/PEvent.h"
+#include "SCRAMJet/Objects/interface/PPFCand.h"
+#include "SCRAMJet/Objects/interface/PJet.h"
+#include "SCRAMJet/Objects/interface/PFatJet.h"
+#include "SCRAMJet/Objects/interface/PGenParticle.h"
+
+// PANDACore
+#include "PandaCore/Tools/interface/Common.h"
+
+// Analyzer-specific
+#include "QjetsFunctions.h"
+#include "EnergyCorrelations.h"
+#include "HeatMap.h"
+#include "KinFitFunction.h"
+#include "PullCalcs.h"
+
+// JEC
 //#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 //#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -90,6 +98,13 @@ double Mjj(scramjet::PJet *j1, scramjet::PJet *j2) {
   TLorentzVector v1,v2;
   v1.SetPtEtaPhiM(j1->pt,j1->eta,j1->phi,j1->m);
   v2.SetPtEtaPhiM(j2->pt,j2->eta,j2->phi,j2->m);
+  return (v1+v2).M();
+}
+
+double Mjj(fastjet::PseudoJet &j1, fastjet::PseudoJet &j2) {
+  TLorentzVector v1,v2;
+  v1.SetPtEtaPhiM(j1.pt(),j1.eta(),j1.phi(),j1.m());
+  v2.SetPtEtaPhiM(j2.pt(),j2.eta(),j2.phi(),j2.m());
   return (v1+v2).M();
 }
 
@@ -164,14 +179,6 @@ public :
       t->Branch("matched",&matched,"matched/I");
       t->Branch("tau32SD",&tau32SD,"tau32SD/f");
       t->Branch("tau21SD",&tau21SD,"tau21SD/f");
-      for (auto beta : betas) {
-        for (auto N : Ns) {
-          for (auto o : orders) {
-            TString ecfname = "ecfN_"+makeECFString(o,N,beta);
-            t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
-          }
-        }
-      }
       t->Branch("heatmap",&hmap);
       t->Branch("fitmass",&fitmass,"fitmass/f");
       t->Branch("fitmassW",&fitmassW,"fitmassW/f");
@@ -186,7 +193,29 @@ public :
       t->Branch("qpt",&qpt,"qpt/f");
       t->Branch("qtau32",&qtau32,"qtau32/f");
       t->Branch("qtau21",&qtau21,"qtau21/f");
+      t->Branch("betapull1",&betapull1,"betapull1/f");
+      t->Branch("betapull2",&betapull2,"betapull2/f");
+      t->Branch("betapull3",&betapull3,"betapull3/f");
+      t->Branch("alphapull1",&alphapull1,"alphapull1/f");
+      t->Branch("alphapull2",&alphapull2,"alphapull2/f");
+      t->Branch("alphapull3",&alphapull3,"alphapull3/f");
+      t->Branch("mW_minalphapull",&mW_minalphapull,"mW_minalphapull/f");
+      for (auto beta : betas) {
+        for (auto N : Ns) {
+          for (auto o : orders) {
+            TString ecfname = "ecfN_"+makeECFString(o,N,beta);
+            // accidentally works - accessing a missing element creates it and returns reference
+            t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+            if (N==3) {
+              t->Branch("min_s"+ecfname,&(subecfns["min_s"+ecfname]),"min_s"+ecfname+"/f");
+              t->Branch("sum_s"+ecfname,&(subecfns["sum_s"+ecfname]),"sum_s"+ecfname+"/f");
+              t->Branch("avg_s"+ecfname,&(subecfns["avg_s"+ecfname]),"avg_s"+ecfname+"/f");
+            }
+          }
+        }
+      }
     }
+
     void read(const scramjet::PFatJet *j) {
       // read some basic floats from j
       pt = j->pt; eta = j->eta; phi = j->phi; 
@@ -199,22 +228,12 @@ public :
         maxcsv = TMath::Max(maxcsv,sj->csv);
       }
     }
+
     void reset() {
       pt=-1; eta=999; phi=999; m=-1; rawpt=-1; maxcsv=-1; mincsv=-1;
       mSD=-1; tau32=-1; tau21=-1; gensize=-1; genpt=-1;
       idx=-1; matched=-1; 
-      //substructure
       tau32SD=-1; tau21SD=-1;
-      for (auto beta : betas) {
-        for (auto N : Ns) {
-          for (auto o : orders) {
-            ecfns["ecfN_"+makeECFString(o,N,beta)] = -1;
-          }
-        }
-      }
-      if (hmap) {
-        hmap->Delete(); hmap=0;
-      }
       //kinematic fit
       fitmass=-1; fitmassW=-1; fitprob=-1;
       fitchi2=-1; fitconv=-1;
@@ -224,13 +243,36 @@ public :
       //qjets
       qmass=-1; qpt=-1;
       qtau32=-1; qtau21=-1;
+      //pull angle
+      betapull1=999;betapull2=999;betapull3=999;
+      alphapull1=999;alphapull2=999;alphapull3=999;
+      mW_minalphapull=-1;
+      // ecf
+      for (auto beta : betas) {
+        for (auto N : Ns) {
+          for (auto o : orders) {
+            ecfns["ecfN_"+makeECFString(o,N,beta)] = -1;
+            if (N==3) {
+              subecfns["min_secfN_"+makeECFString(o,N,beta)] = 999;
+              subecfns["sum_secfN_"+makeECFString(o,N,beta)] = 0;
+              subecfns["avg_secfN_"+makeECFString(o,N,beta)] = 0;
+            }
+          }
+        }
+      }
+      if (hmap) {
+        hmap->Delete(); hmap=0;
+      }
     }
+
     float pt=0, eta=0, phi=0, m=0, rawpt=0, maxcsv=0, mincsv=0;
     float mSD=0, tau32=0, tau21=0, gensize=0, genpt=0;
     int idx=-1, matched=-1; 
     // custom substructure
     float tau32SD=0, tau21SD=0;
+    //ecfs
     std::map<TString,float> ecfns;
+    std::map<TString,float> subecfns;
     TH2F *hmap=0;
     //kinematic fit
     float fitmass=0, fitmassW=0, fitprob=0, fitchi2=0;
@@ -241,6 +283,10 @@ public :
     //qjets
     float qmass=0,qpt=0;
     float qtau32=0,qtau21=0;
+    //pull angle
+    float betapull1=0,betapull2=0,betapull3=0;
+    float alphapull1=0,alphapull2=0,alphapull3=0;
+    float mW_minalphapull=0;
 
   };
 
@@ -303,6 +349,7 @@ public :
   // public configuration
   bool isData=false;                         // to do gen matching, etc
   int maxEvents=-1;                          // max events to process; -1=>all
+  int maxJets=-1;                            // max fat jets to process; -1=>all
   double minFatJetPt=250;                    // min fatjet pt
   ProcessType processType=kNone;             // determine what to do the jet matching to
 

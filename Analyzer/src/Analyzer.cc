@@ -9,6 +9,10 @@
 using namespace scramjet;
 using namespace std;
 
+double clean(double x, double d=-1) {
+  return (x==x) ? x : d;
+}
+
 Analyzer::Analyzer() {
   // construct bare minumum objects 
   event = new PEvent();
@@ -217,6 +221,10 @@ void Analyzer::Run() {
 
   // initialize ECFN calculation
   ECFNManager *ecfnmanager = new ECFNManager(); // default is everything is on
+  ECFNManager *subecfnmanager = new ECFNManager(); 
+      subecfnmanager->doN1=false;
+      subecfnmanager->doN2=false;
+      subecfnmanager->doN4=false;
 
   // initialize qjets
   if (doQjets) {
@@ -391,6 +399,8 @@ void Analyzer::Run() {
 
       int nJets = injets->size();
       for (int iJ=0; iJ!=nJets; ++iJ) {
+        if (maxJets>=0 && iJ==maxJets)
+          break;
         outjet->reset();
         PFatJet *pfatjet = injets->at(iJ);
         if (pfatjet->pt<minFatJetPt)
@@ -435,6 +445,8 @@ void Analyzer::Run() {
           fastjet::PseudoJet sdJetCA = (*anafatjet->sd)(*leadingJetCA);
           fastjet::PseudoJet sdJetAK = (*anafatjet->sd)(*leadingJetAK);
           
+          VPseudoJet sdsubjets = fastjet::sorted_by_pt(sdJetCA.exclusive_subjets_up_to(3));
+
           // get the constituents and sort them
           VPseudoJet sdConstituentsCA = sdJetCA.constituents();
           std::sort(sdConstituentsCA.begin(),sdConstituentsCA.end(),orderPseudoJet);
@@ -460,34 +472,72 @@ void Analyzer::Run() {
                 }
               }
             }
-            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.4: %f",sw->RealTime()*1000)); sw->Start(); }
-          }
 
+            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.31: %f",sw->RealTime()*1000)); sw->Start(); }
+
+            // now we calculate ECFs for the subjets
+            unsigned int nS = sdsubjets.size();
+            for (auto beta : betas) {
+              if (beta<2.0)
+                continue; // speed things up for now
+              for (unsigned int iS=0; iS!=nS; ++iS) {
+                VPseudoJet subconstituents = sdsubjets[iS].constituents();
+                nFilter = TMath::Min(80,(int)subconstituents.size());
+                std::sort(subconstituents.begin(),subconstituents.end(),orderPseudoJet);
+                VPseudoJet subconstituentsFiltered(subconstituents.begin(),subconstituents.begin()+nFilter);
+
+                calcECFN(beta,subconstituentsFiltered,subecfnmanager);
+                outjet->subecfns["min_secfN_"+makeECFString(1,3,beta)] = TMath::Min(
+                    (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,1)],
+                    (double)outjet->subecfns["min_secfN_"+makeECFString(1,3,beta)]);
+                outjet->subecfns["min_secfN_"+makeECFString(2,3,beta)] = TMath::Min(
+                    (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,2)],
+                    (double)outjet->subecfns["min_secfN_"+makeECFString(2,3,beta)]);
+                outjet->subecfns["min_secfN_"+makeECFString(3,3,beta)] = TMath::Min(
+                    (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,3)],
+                    (double)outjet->subecfns["min_secfN_"+makeECFString(3,3,beta)]);
+                outjet->subecfns["sum_secfN_"+makeECFString(1,3,beta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,1)];
+                outjet->subecfns["sum_secfN_"+makeECFString(2,3,beta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,2)];
+                outjet->subecfns["sum_secfN_"+makeECFString(3,3,beta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,3)];
+              }
+              outjet->subecfns["avg_secfN_"+makeECFString(1,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(1,3,beta)]/nS;
+              outjet->subecfns["avg_secfN_"+makeECFString(2,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(2,3,beta)]/nS;
+              outjet->subecfns["avg_secfN_"+makeECFString(3,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(3,3,beta)]/nS;
+            }
+
+            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.4: %f",sw->RealTime()*1000)); sw->Start(); }
+
+          }
 
           //////////// now let's do groomed tauN! /////////////
           double tau3 = anafatjet->tau->getTau(3,sdConstituentsCA);
           double tau2 = anafatjet->tau->getTau(2,sdConstituentsCA);
           double tau1 = anafatjet->tau->getTau(1,sdConstituentsCA);
-          outjet->tau32SD = tau3/tau2;
-          outjet->tau21SD = tau2/tau1;
+          outjet->tau32SD = clean(tau3/tau2);
+          outjet->tau21SD = clean(tau2/tau1);
 
           if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.5: %f",sw->RealTime()*1000)); sw->Start(); }
 
           //////////// Q-jet quantities ////////////////
           if (doQjets) {
-            std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,15,anafatjet->tau);
+            std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,5,anafatjet->tau);
+            //std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,10);
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.51: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity getmass = [](qjetwrapper w) { return w.jet.m(); };
-            outjet->qmass = qVolQuantity(q_jets,getmass);
+            outjet->qmass = clean(qVolQuantity(q_jets,getmass));
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.52: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity getpt= [](qjetwrapper w) { return w.jet.pt(); };
-            outjet->qpt = qVolQuantity(q_jets,getpt);
+            outjet->qpt = clean(qVolQuantity(q_jets,getpt));
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.53: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity gettau32 = [](qjetwrapper w) { return w.tau32; };
-            outjet->qtau32 = qVolQuantity(q_jets,gettau32);
+            outjet->qtau32 = clean(qVolQuantity(q_jets,gettau32));
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.54: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity gettau21 = [](qjetwrapper w) { return w.tau21; };
-            outjet->qtau21 = qVolQuantity(q_jets,gettau21);
+            outjet->qtau21 = clean(qVolQuantity(q_jets,gettau21));
 
             if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.6: %f",sw->RealTime()*1000)); sw->Start(); }
           }
@@ -515,16 +565,20 @@ void Analyzer::Run() {
               dR2 = DeltaR2(subjets->at(1),subjets->at(2));
               mW = Mjj(subjets->at(1),subjets->at(2));
               sjpairs.emplace_back(dR2,mW);
+
+              // now order by dR
+              std::sort(sjpairs.begin(),sjpairs.end(),orderByDR);
+              outjet->dR2_minDR=sjpairs[0].dR2;
+              outjet->mW_minDR=sjpairs[0].mW;
+
+              // now by mW
+              std::sort(sjpairs.begin(),sjpairs.end(),orderByMW);
+              outjet->mW_best=sjpairs[0].mW;
+            } else {
+              outjet->dR2_minDR=sjpairs[0].dR2;
+              outjet->mW_minDR=subjets->at(0)->m;
+              outjet->mW_best = (TMath::Abs(subjets->at(0)->m-WMASS)<TMath::Abs(subjets->at(1)->m-WMASS)) ? subjets->at(0)->m : subjets->at(1)->m;
             }
-
-            // now order by dR
-            std::sort(sjpairs.begin(),sjpairs.end(),orderByDR);
-            outjet->dR2_minDR=sjpairs[0].dR2;
-            outjet->mW_minDR=sjpairs[0].mW;
-
-            // now by mW
-            std::sort(sjpairs.begin(),sjpairs.end(),orderByMW);
-            outjet->mW_best=sjpairs[0].mW;
           }
 
           if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.8: %f",sw->RealTime()*1000)); sw->Start(); }
@@ -538,15 +592,47 @@ void Analyzer::Run() {
               PerformKinFit(fitter,fitresults,leadingSubjets[1],leadingSubjets[2],leadingSubjets[0]); 
               outjet->fitconv = (fitresults->converged) ? 1 : 0;
               if (fitresults->converged) {
-                outjet->fitmass = fitresults->fitmass;
-                outjet->fitmassW = fitresults->fitmassW;
                 outjet->fitprob = fitresults->prob;
                 outjet->fitchi2 = fitresults->chisq;
+                outjet->fitmass = fitresults->fitmass;
+                outjet->fitmassW = fitresults->fitmassW;
               }
             }
             if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.9: %f",sw->RealTime()*1000)); sw->Start(); }
 
           }
+          
+          ////// pull angles! ///////
+          unsigned int nS=sdsubjets.size();
+          std::vector<TVector2> pulls; pulls.reserve(3);
+          if (nS>0) {
+            pulls.push_back(GetPull(sdsubjets[0]));
+            outjet->betapull1 = pulls[0].X();
+            if (nS>1) {
+              pulls.push_back(GetPull(sdsubjets[1]));
+              outjet->betapull2 = pulls[1].X();
+              // 0:01, 1:02, 2:12
+              outjet->alphapull1 = GetPullAngle(sdsubjets[0],sdsubjets[1],pulls[0]);
+              if (nS>2) {
+                pulls.push_back(GetPull(sdsubjets[2]));
+                outjet->betapull3 = pulls[2].X();
+                outjet->alphapull2 = GetPullAngle(sdsubjets[0],sdsubjets[2],pulls[0]);
+                outjet->alphapull3 = GetPullAngle(sdsubjets[1],sdsubjets[2],pulls[1]);
+
+                float minpullangle = outjet->alphapull1; outjet->mW_minalphapull = Mjj(sdsubjets[0],sdsubjets[1]);
+                if (outjet->alphapull2 < minpullangle) {
+                  minpullangle = outjet->alphapull2;
+                  outjet->mW_minalphapull = Mjj(sdsubjets[0],sdsubjets[2]);
+                }
+                if (outjet->alphapull3 < minpullangle) {
+                  minpullangle = outjet->alphapull3;
+                  outjet->mW_minalphapull = Mjj(sdsubjets[1],sdsubjets[2]);
+                }
+              }
+              outjet->mW_minalphapull = sdsubjets[0].m();
+            }
+          }
+          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.10: %f",sw->RealTime()*1000)); sw->Start(); }
 
           /////// fill ////////
           anafatjet->outtree->Fill();

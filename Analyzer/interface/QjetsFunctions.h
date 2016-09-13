@@ -37,6 +37,9 @@ qjetwrapper getQjet(std::vector<fastjet::PseudoJet> &constituents, qjets::QjetsP
 //      fprintf(stderr,"%f %f %f\n",tau3,tau2,tau1);
       wrapper.tau32=tau3/tau2;
       wrapper.tau21=tau2/tau1;
+    } else {
+      wrapper.tau32=0;
+      wrapper.tau21=0;
     }
   }
 
