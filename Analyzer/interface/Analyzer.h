@@ -348,7 +348,8 @@ public :
 
   // public configuration
   bool isData=false;                         // to do gen matching, etc
-  int maxEvents=-1;                          // max events to process; -1=>all
+  int firstEvent=-1;
+  int lastEvent=-1;                          // max events to process; -1=>all
   int maxJets=-1;                            // max fat jets to process; -1=>all
   double minFatJetPt=250;                    // min fatjet pt
   ProcessType processType=kNone;             // determine what to do the jet matching to
