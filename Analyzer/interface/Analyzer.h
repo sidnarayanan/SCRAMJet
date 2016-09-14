@@ -200,6 +200,7 @@ public :
       t->Branch("alphapull2",&alphapull2,"alphapull2/f");
       t->Branch("alphapull3",&alphapull3,"alphapull3/f");
       t->Branch("mW_minalphapull",&mW_minalphapull,"mW_minalphapull/f");
+      t->Branch("minpullalpha",&minpullangle,"minpullalpha/f");
       for (auto beta : betas) {
         for (auto N : Ns) {
           for (auto o : orders) {
@@ -247,6 +248,7 @@ public :
       betapull1=999;betapull2=999;betapull3=999;
       alphapull1=999;alphapull2=999;alphapull3=999;
       mW_minalphapull=-1;
+      minpullangle=999;
       // ecf
       for (auto beta : betas) {
         for (auto N : Ns) {
@@ -286,7 +288,7 @@ public :
     //pull angle
     float betapull1=0,betapull2=0,betapull3=0;
     float alphapull1=0,alphapull2=0,alphapull3=0;
-    float mW_minalphapull=0;
+    float mW_minalphapull=0, minpullangle=0;
 
   };
 

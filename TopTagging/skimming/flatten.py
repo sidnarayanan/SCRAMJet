@@ -48,7 +48,8 @@ def addbranches(fpath,additionalcut=None):
   fin.WriteTObject(jets,'puppiCA15','Overwrite')
 
 
-#addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v1/ZpTT.root','matched==1&&gensize<1.2')
-addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v1/QCD.root')
+addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v2/ZpTT.root','matched==1&&gensize<1.2')
+addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v2/ZpWW.root','matched==1&&gensize<0.6')
+addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v2/QCD.root')
 
 
