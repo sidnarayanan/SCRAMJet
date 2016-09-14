@@ -26,7 +26,7 @@ if __name__ == "__main__":
     start=clock()
 
     eosPath = 'root://eoscms.cern.ch//store/user/snarayan'
-    cernboxPath = 'root://eosuser//eos/user/%s/%s'%(getenv('USER')[0],getenv('USER'))
+    cernboxPath = 'root://eosuser//eos/user/s/snarayan'
     cernboxBPath = 'root://eosuser//eos/user/b/bmaier'
     fullPath = sub(r'\${CERNBOXB}',cernboxBPath,sub(r'\${CERNBOX}',cernboxPath,sub(r'\${EOS}',eosPath,longName)))
     PInfo(sname,fullPath)
