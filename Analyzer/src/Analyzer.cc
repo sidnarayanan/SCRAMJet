@@ -205,8 +205,11 @@ void Analyzer::Run() {
   // INITIALIZE --------------------------------------------------------------------------
   
   unsigned int nEvents = tIn->GetEntries();
-  if (maxEvents>=0 && maxEvents<(int)nEvents)
-    nEvents = maxEvents;
+  unsigned int nZero = 0;
+  if (lastEvent>=0 && lastEvent<(int)nEvents)
+    nEvents = lastEvent;
+  if (firstEvent>=0)
+    nZero = firstEvent;
 
   if (!fOut || !tIn) {
     PError("SCRAMJetAnalyzer::Run","NOT SETUP CORRECTLY");
@@ -240,7 +243,7 @@ void Analyzer::Run() {
   hDTotalMCWeight->Reset();
 
   // EVENTLOOP --------------------------------------------------------------------------
-  for (iE=0; iE!=nEvents; ++iE) {
+  for (iE=nZero; iE!=nEvents; ++iE) {
     if (DEBUG) sw->Start(true);
     pr.Report();
     ResetBranches();

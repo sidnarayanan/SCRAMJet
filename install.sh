@@ -38,5 +38,6 @@ scram setup fastjet
 
 cd ${FASTJET_BASE}/lib
 for f in *; do 
-    ln -s ${PWD}/${f} ${CMSSW_BASE}/lib/slc6_amd64_gcc530/ # so we can run on CRAB
+    ln -sf ${PWD}/${f} ${CMSSW_BASE}/lib/slc6_amd64_gcc530/ # so we can run on CRAB
+    ln -sf ${PWD}/${f} ${CMSSW_BASE}/external/slc6_amd64_gcc530/lib # does scram setup not do this anymore?
   done
