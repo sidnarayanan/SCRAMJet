@@ -5,7 +5,7 @@
 #include <vector>
 #include "TStopwatch.h"
 
-#define DEBUG 0
+#define DEBUG 1
 using namespace scramjet;
 using namespace std;
 
