@@ -40,8 +40,7 @@ if __name__ == "__main__":
     skimmer.doHeatMap=False
     skimmer.doECF=True
     skimmer.doKinFit=True
-    skimmer.doQjets=True
-    skimmer.maxJets=1
+    skimmer.doQjets=False
 
     if 'TT' in fullPath:
       skimmer.processType=root.Analyzer.kTop
@@ -69,22 +68,18 @@ if __name__ == "__main__":
     PInfo(sname,'finished in %f'%(clock()-start)); start=clock()
 
   
-  gr = GenericRunner(fn)
   argList = []
   which = int(argv[1])
   counter=0
   cfg = open('local.cfg')
   for line in cfg:
-    if counter>=which*nPerJob and counter<(which+1)*nPerJob:
-      ll = line.split()
-      isData = not(ll[1]=='MC')
-      if len(ll)==5:
-        argList.append([ll[0],ll[3],int(ll[4]),float(ll[2]),isData,argv[3]])
-      else:
-        argList.append([ll[0],ll[3],counter,float(ll[2]),isData,argv[3]])
+    ll = line.split()
+    isData = not(ll[1]=='MC')
+    if len(ll)==5:
+      argList.append([ll[0],ll[3],int(ll[4]),float(ll[2]),isData,argv[3]])
+    else:
+      argList.append([ll[0],ll[3],counter,float(ll[2]),isData,argv[3]])
     counter+=1
   shuffle(argList)
-  gr.setArgList(argList)
-  gr.run(4)
-
-
+  for x in argList:
+    fn(*x)

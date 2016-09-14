@@ -25,6 +25,7 @@ Load('Drawers','PlotUtility')
 
 ### DEFINE REGIONS ###
 cut = 'pt<600'
+#cut = ''
 if not args.cut:
   label = ''
   plotlabel = None
@@ -71,9 +72,21 @@ for p in processes:
 plot.SetTDRStyle()
 plot.AddCMSLabel()
 if plotlabel:
-  plot.AddPlotLabel(plotlabel,.16,.8,False,42,.04)
+  plot.AddPlotLabel(plotlabel,.2,.8,False,42,.04)
 
 dists = []
+
+mW_minalpha = root.Distribution('mW_minalphapull',0,300,50,'Disubjet mass, min pull [GeV]','Events/6 GeV',999,-999,'mW_minalpha')
+dists.append(mW_minalpha)
+
+minalpha = root.Distribution('TMath::Min(fabs(alphapull1),TMath::Min(fabs(alphapull2),fabs(alphapull3)))',-3.14,3.14,50,'Min subjet pair pull #phi','Events',999,-999,'minalpha')
+dists.append(minalpha)
+
+alpha1 = root.Distribution('alphapull1',-3.14,3.14,50,'Leading pT #alpha angle','Events',999,-999,'alpha1')
+dists.append(alpha1)
+
+beta1 = root.Distribution('betapull1',-3.14,3.14,50,'Leading pT #beta angle','Events',999,-999,'beta1')
+dists.append(beta1)
 
 fitprob = root.Distribution('fitprob',-1.1,1.1,44,'P(fit)','Events')
 dists.append(fitprob)
@@ -89,7 +102,6 @@ dists.append(mW_minDR)
 
 mW_best = root.Distribution('mW_best',0,300,50,'Best subjet W mass [GeV]','Events/6 GeV',999,-999,'mW_best')
 dists.append(mW_best)
-
 
 N3_10 = root.Distribution("ecfN_2_4_10/TMath::Power(ecfN_1_3_10,2)",0.5,3.5,50,"N_{3}(#beta=1.0)","Events",999,-999,"N3_10");
 dists.append(N3_10)
@@ -112,7 +124,7 @@ dists.append(msd)
 pt = root.Distribution("pt",250,600,50,'p_{T} [GeV]','Events/7 GeV')
 dists.append(pt)
 
-rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,0,40,'#rho','Events',999,-999,'rho')
+rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,0,50,'#rho','Events',999,-999,'rho')
 dists.append(rho)
 
 for d in dists:

@@ -399,9 +399,9 @@ void Analyzer::Run() {
 
       int nJets = injets->size();
       for (int iJ=0; iJ!=nJets; ++iJ) {
+        outjet->reset();
         if (maxJets>=0 && iJ==maxJets)
           break;
-        outjet->reset();
         PFatJet *pfatjet = injets->at(iJ);
         if (pfatjet->pt<minFatJetPt)
           continue;
@@ -607,25 +607,25 @@ void Analyzer::Run() {
           std::vector<TVector2> pulls; pulls.reserve(3);
           if (nS>0) {
             pulls.push_back(GetPull(sdsubjets[0]));
-            outjet->betapull1 = pulls[0].X();
+            outjet->betapull1 = GetPullBeta(pulls[0]);
             if (nS>1) {
               pulls.push_back(GetPull(sdsubjets[1]));
-              outjet->betapull2 = pulls[1].X();
+              outjet->betapull2 = GetPullBeta(pulls[1]);
               // 0:01, 1:02, 2:12
-              outjet->alphapull1 = GetPullAngle(sdsubjets[0],sdsubjets[1],pulls[0]);
+              outjet->alphapull1 = GetPullAlpha(sdsubjets[0],sdsubjets[1],pulls[0]);
               if (nS>2) {
                 pulls.push_back(GetPull(sdsubjets[2]));
-                outjet->betapull3 = pulls[2].X();
-                outjet->alphapull2 = GetPullAngle(sdsubjets[0],sdsubjets[2],pulls[0]);
-                outjet->alphapull3 = GetPullAngle(sdsubjets[1],sdsubjets[2],pulls[1]);
+                outjet->betapull3 = GetPullBeta(pulls[2]);
+                outjet->alphapull2 = GetPullAlpha(sdsubjets[0],sdsubjets[2],pulls[0]);
+                outjet->alphapull3 = GetPullAlpha(sdsubjets[1],sdsubjets[2],pulls[1]);
 
-                float minpullangle = outjet->alphapull1; outjet->mW_minalphapull = Mjj(sdsubjets[0],sdsubjets[1]);
-                if (outjet->alphapull2 < minpullangle) {
-                  minpullangle = outjet->alphapull2;
+                outjet->minpullangle = TMath::Abs(outjet->alphapull1); outjet->mW_minalphapull = Mjj(sdsubjets[0],sdsubjets[1]);
+                if (TMath::Abs(outjet->alphapull2) < outjet->minpullangle) {
+                  outjet->minpullangle = TMath::Abs(outjet->alphapull2);
                   outjet->mW_minalphapull = Mjj(sdsubjets[0],sdsubjets[2]);
                 }
-                if (outjet->alphapull3 < minpullangle) {
-                  minpullangle = outjet->alphapull3;
+                if (TMath::Abs(outjet->alphapull3) < outjet->minpullangle) {
+                  outjet->minpullangle = TMath::Abs(outjet->alphapull3);
                   outjet->mW_minalphapull = Mjj(sdsubjets[1],sdsubjets[2]);
                 }
               }
