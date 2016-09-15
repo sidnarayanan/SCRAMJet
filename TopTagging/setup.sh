@@ -8,4 +8,5 @@ histDir=scramjet
 export SCRAMJETHIST=${EOS}/$histDir
 
 #location of flat trees
-export SCRAMJETFLAT=${HOME}/work/skims/scramjet_v2/
+export SCRAMJETFLAT=${HOME}/home000/scramjet_v3/
+mkdir -p $SCRAMJETFLAT/batch
