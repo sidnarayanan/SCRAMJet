@@ -41,3 +41,11 @@ for f in *; do
     ln -sf ${PWD}/${f} ${CMSSW_BASE}/lib/slc6_amd64_gcc530/ # so we can run on CRAB
     ln -sf ${PWD}/${f} ${CMSSW_BASE}/external/slc6_amd64_gcc530/lib # does scram setup not do this anymore?
   done
+
+cd $CMSSW_BASE/src/SCRAMJet/
+git clone git@github.com:sidnarayanan/SDAlgorithm.git
+
+cd $CMSSW_BASE/src/
+git clone git@gitlab.com:sidnarayanan/PandaCore.git
+
+scram b -j$(nproc)
