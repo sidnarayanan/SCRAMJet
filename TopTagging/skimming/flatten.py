@@ -4,6 +4,7 @@ import ROOT as root
 from PandaCore.Tools.Load import *
 from PandaCore.Tools.Misc import *
 from sys import argv
+from os import getenv
 
 Load('Tools','BranchAdder')
 
@@ -48,8 +49,16 @@ def addbranches(fpath,additionalcut=None):
   fin.WriteTObject(jets,'puppiCA15','Overwrite')
 
 
-addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v2/ZpTT.root','matched==1&&gensize<1.2')
-addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v2/ZpWW.root','matched==1&&gensize<0.6')
-addbranches('/afs/cern.ch/user/s/snarayan/work/skims/scramjet_v2/QCD.root')
+which = argv[1]
+scramjet = getenv('SCRAMJETFLAT')
+
+if which=='ZpTT':
+  addbranches(scramjet+'/ZpTT.root','matched==1&&gensize<1.2')
+elif which=='ZpWW':
+  addbranches(scramjet+'/ZpWW.root','matched==1&&gensize<1.2')
+elif which=="ZH":
+  addbranches(scramjet+'/ZHbb_mH125.root','matched==1&&gensize<1.2')
+else:
+  addbranches(scramjet+'/QCD.root')
 
 

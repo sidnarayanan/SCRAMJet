@@ -27,7 +27,7 @@ Load('Drawers','PlotUtility')
 cut = 'pt<600'
 #cut = ''
 if not args.cut:
-  label = ''
+  label = 'nocut'
   plotlabel = None
 elif args.cut=='mass':
   cut = tAND(cut,'mSD>110 && mSD<210')
@@ -36,7 +36,7 @@ elif args.cut=='mass':
 elif args.cut=='masstau':
   cut = tAND(cut,'mSD>110 && mSD<210 && tau32<0.6')
   label = 'masstauCut_'
-  plotlabel = '110 < m_{SD} < 210 GeV, #tau_{32}<0.6'
+  plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{#tau_{32}<0.6}'
 elif args.cut=='tau':
   cut = tAND(cut,'tau32<0.6')
   label = 'tauCut_'
@@ -44,6 +44,7 @@ elif args.cut=='tau':
 
 ### LOAD PLOTTING UTILITY ###
 plot = root.PlotUtility()
+plot.InitLegend(0.7,0.7,0.88,0.9)
 plot.Stack(False)
 plot.SetNormFactor(True)
 plot.SetCut(tcut(cut))
@@ -51,9 +52,9 @@ plot.SetMCWeight('normalizedWeight*ptweight')
 #plot.CloneTrees(True) # doesn't work if friends are added
 
 ### DEFINE PROCESSES ###
-matched = root.Process('Matched',root.kExtra1); matched.additionalCut = tcut('matched==1 && gensize<1.2')
+matched = root.Process('Top',root.kExtra1); matched.additionalCut = tcut('matched==1 && gensize<1.2')
 unmatched = root.Process('Unmatched',root.kExtra2); unmatched.additionalCut = tcut('matched==0 || gensize>1.2')
-qcd = root.Process('QCD',root.kQCD)
+qcd = root.Process('QCD',root.kExtra3)
 #processes = [qcd,unmatched,matched]
 processes = [qcd,matched]
 
@@ -72,21 +73,36 @@ for p in processes:
 plot.SetTDRStyle()
 plot.AddCMSLabel()
 if plotlabel:
-  plot.AddPlotLabel(plotlabel,.2,.8,False,42,.04)
+  plot.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 dists = []
+
+min_secfN = root.Distribution('min_secfN_1_3_20',0,0.001,50,'min(_{1}e_{3},subjets) #beta=2','Events')
+dists.append(min_secfN)
+
+sum_secfN = root.Distribution('sum_secfN_1_3_20',0,0.05,50,'sum(_{1}e_{3},subjets) #beta=2','Events')
+dists.append(sum_secfN)
+
+avg_secfN = root.Distribution('avg_secfN_1_3_20',0,0.01,50,'avg(_{1}e_{3},subjets) #beta=2','Events')
+dists.append(avg_secfN)
 
 mW_minalpha = root.Distribution('mW_minalphapull',0,300,50,'Disubjet mass, min pull [GeV]','Events/6 GeV',999,-999,'mW_minalpha')
 dists.append(mW_minalpha)
 
-minalpha = root.Distribution('TMath::Min(fabs(alphapull1),TMath::Min(fabs(alphapull2),fabs(alphapull3)))',-3.14,3.14,50,'Min subjet pair pull #phi','Events',999,-999,'minalpha')
+minalpha = root.Distribution('minpullalpha',0,3.14,50,'Min subjet pair pull #phi','Events',999,-999,'minalpha')
 dists.append(minalpha)
 
-alpha1 = root.Distribution('alphapull1',-3.14,3.14,50,'Leading pT #alpha angle','Events',999,-999,'alpha1')
+alpha1 = root.Distribution('TMath::Abs(alphapull1)',0,3.14,50,'Leading pT #alpha angle','Events',999,-999,'alpha1')
 dists.append(alpha1)
+
+alpha2 = root.Distribution('TMath::Abs(alphapull2)',0,3.14,50,'Subleading pT #alpha angle','Events',999,-999,'alpha2')
+dists.append(alpha2)
 
 beta1 = root.Distribution('betapull1',-3.14,3.14,50,'Leading pT #beta angle','Events',999,-999,'beta1')
 dists.append(beta1)
+
+beta2 = root.Distribution('betapull2',-3.14,3.14,50,'Subleading pT #beta angle','Events',999,-999,'beta2')
+dists.append(beta2)
 
 fitprob = root.Distribution('fitprob',-1.1,1.1,44,'P(fit)','Events')
 dists.append(fitprob)
@@ -124,8 +140,10 @@ dists.append(msd)
 pt = root.Distribution("pt",250,600,50,'p_{T} [GeV]','Events/7 GeV')
 dists.append(pt)
 
-rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,0,50,'#rho','Events',999,-999,'rho')
+rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,2,50,'#rho','Events',999,-999,'rho')
 dists.append(rho)
+
+dists = [alpha1,alpha2]
 
 for d in dists:
   plot.AddDistribution(d)
