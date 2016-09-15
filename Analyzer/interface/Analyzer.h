@@ -41,6 +41,7 @@
 #include "HeatMap.h"
 #include "KinFitFunction.h"
 #include "PullCalcs.h"
+#include "SDAlgorithm.h"
 
 // JEC
 //#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -54,6 +55,10 @@
 std::vector<double> betas = {0.5, 1.0, 2.0};
 std::vector<int> Ns = {1,2,3,4}; // only used for making branches and stuff
 std::vector<int> orders = {1,2,3};
+
+double clean(double x, double d=-1) {
+  return (x==x) ? x : d;
+}
 
 class sjpair {
   public:
@@ -221,7 +226,7 @@ public :
       // read some basic floats from j
       pt = j->pt; eta = j->eta; phi = j->phi; 
       m = j->m; rawpt = j->rawPt; mSD = j->mSD;
-      tau32 = j->tau3/j->tau2; tau21 = j->tau2/j->tau1;
+      tau32 = clean(j->tau3/j->tau2); tau21 = clean(j->tau2/j->tau1);
 
       mincsv=999; maxcsv=-999;
       for (auto *sj : *(j->subjets)) {
@@ -355,11 +360,13 @@ public :
   int maxJets=-1;                            // max fat jets to process; -1=>all
   double minFatJetPt=250;                    // min fatjet pt
   ProcessType processType=kNone;             // determine what to do the jet matching to
+  TString showerDecoConfig="";
 
   bool doECF=false;
   bool doQjets=false;
   bool doKinFit=false;
   bool doHeatMap=false;
+  bool doShowerDeco=false;
   bool doAKSubstructure=false;
 
 private:
@@ -402,6 +409,12 @@ private:
   qjets::QjetsPlugin *qplugin=0;
   fastjet::JetDefinition *qdef=0;
 
+  // shower deco
+  AnalysisParameters *decoParams=0;
+  Deconstruction::Deconstruct* decoNstruct{0};
+  Deconstruction::TopGluonModel* decoTop{0};
+  Deconstruction::BackgroundModel* decoBG{0};
+  Deconstruction::ISRModel* decoISR{0};
 };
 
 typedef std::vector<fastjet::PseudoJet> VPseudoJet;

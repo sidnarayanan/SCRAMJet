@@ -18,7 +18,8 @@ if __name__ == "__main__":
 
     skimmer = root.Analyzer()
    
-    skimmer.maxEvents = 10
+    skimmer.firstEvent=0
+    skimmer.lastEvent=10
     skimmer.isData=False
     skimmer.doHeatMap=True
     skimmer.doECF=True

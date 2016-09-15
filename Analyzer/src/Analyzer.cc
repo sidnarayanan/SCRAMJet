@@ -3,15 +3,10 @@
 #include "TMath.h"
 #include <algorithm>
 #include <vector>
-#include "TStopwatch.h"
 
-#define DEBUG 0
+#define DEBUG 1
 using namespace scramjet;
 using namespace std;
-
-double clean(double x, double d=-1) {
-  return (x==x) ? x : d;
-}
 
 Analyzer::Analyzer() {
   // construct bare minumum objects 
@@ -236,19 +231,27 @@ void Analyzer::Run() {
   }
   int qcounter=0;
 
-  TStopwatch *sw = 0;
-  if (DEBUG) sw = new TStopwatch();
+  // initialize shower deco
+  if (doShowerDeco) {
+    decoParams = new AnalysisParameters(showerDecoConfig.Data());
+    decoTop = new Deconstruction::TopGluonModel(*decoParams);
+    decoBG = new Deconstruction::BackgroundModel(*decoParams);
+    decoISR = new Deconstruction::ISRModel(*decoParams);
+    decoNstruct = new Deconstruction::Deconstruct(*decoParams,*decoTop,*decoBG,*decoISR);
+  }
+
   unsigned int iE=0;
   ProgressReporter pr("SCRAMJetAnalyzer::Run",&iE,&nEvents,10);
+  TimeReporter tr("SCRAMJetAnalyzer::Run",DEBUG);
   hDTotalMCWeight->Reset();
 
   // EVENTLOOP --------------------------------------------------------------------------
   for (iE=nZero; iE!=nEvents; ++iE) {
-    if (DEBUG) sw->Start(true);
+    tr.Start();
     pr.Report();
     ResetBranches();
     tIn->GetEntry(iE);
-    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format("-1: %f",sw->RealTime()*1000)); sw->Start(); }
+    tr.TriggerEvent("GetEntry");
 
     // event info
     mcWeight = (event->mcWeight>0) ? 1 : -1;
@@ -258,7 +261,7 @@ void Analyzer::Run() {
     lumiNumber = event->lumiNumber;
     eventNumber = event->eventNumber;
 
-    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 0: %f",sw->RealTime()*1000)); sw->Start(); }
+    tr.TriggerEvent("initialize");
 
     // identify interesting gen particles
     if (processType!=kQCD && processType!=kNone) {
@@ -375,7 +378,7 @@ void Analyzer::Run() {
       } // loop over targets
     } // process is not QCD or undef
 
-    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 1: %f",sw->RealTime()*1000)); sw->Start(); }
+    tr.TriggerEvent("gen matching");
 
     // these are ak4 jets stored in the tree
     for (auto *anajet : anajets) {
@@ -392,7 +395,7 @@ void Analyzer::Run() {
       } // loop over jets
     } // loop over jet collections
 
-    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2: %f",sw->RealTime()*1000)); sw->Start(); }
+    tr.TriggerEvent("jets");
 
     // these are fat jets stored in the tree
     // much more complicated!
@@ -420,7 +423,7 @@ void Analyzer::Run() {
           outjet->matched = 0; 
         }
 
-        if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.1: %f",sw->RealTime()*1000)); sw->Start(); }
+        tr.TriggerSubEvent("gen matching");
 
         /////// fastjet ////////
         VPseudoJet vpj = ConvertFatJet(pfatjet,anafatjet->pfcands,0.1);
@@ -442,7 +445,7 @@ void Analyzer::Run() {
             leadingJetAK = &jet;
         }
         
-        if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.2: %f",sw->RealTime()*1000)); sw->Start(); }
+        tr.TriggerSubEvent("clustering");
 
         if (leadingJetCA!=NULL || leadingJetAK!=NULL) {
           fastjet::PseudoJet sdJetCA = (*anafatjet->sd)(*leadingJetCA);
@@ -457,7 +460,7 @@ void Analyzer::Run() {
           VPseudoJet sdConstituentsAK = sdJetAK.constituents();
           std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
 
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.3: %f",sw->RealTime()*1000)); sw->Start(); }
+          tr.TriggerSubEvent("soft drop");
 
           /////////// let's calculate ECFs! ///////////
 
@@ -476,7 +479,7 @@ void Analyzer::Run() {
               }
             }
 
-            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.31: %f",sw->RealTime()*1000)); sw->Start(); }
+            tr.TriggerSubEvent("ecfns");
 
             // now we calculate ECFs for the subjets
             unsigned int nS = sdsubjets.size();
@@ -508,7 +511,7 @@ void Analyzer::Run() {
               outjet->subecfns["avg_secfN_"+makeECFString(3,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(3,3,beta)]/nS;
             }
 
-            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.4: %f",sw->RealTime()*1000)); sw->Start(); }
+            tr.TriggerSubEvent("subecfns");
 
           }
 
@@ -519,37 +522,33 @@ void Analyzer::Run() {
           outjet->tau32SD = clean(tau3/tau2);
           outjet->tau21SD = clean(tau2/tau1);
 
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.5: %f",sw->RealTime()*1000)); sw->Start(); }
+          tr.TriggerSubEvent("tauSD");
 
           //////////// Q-jet quantities ////////////////
           if (doQjets) {
-            std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,5,anafatjet->tau);
+            std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,15,anafatjet->tau);
             //std::vector<qjetwrapper> q_jets = getQjets(vpj,qplugin,qdef,qcounter++,10);
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.51: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity getmass = [](qjetwrapper w) { return w.jet.m(); };
             outjet->qmass = clean(qVolQuantity(q_jets,getmass));
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.52: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity getpt= [](qjetwrapper w) { return w.jet.pt(); };
             outjet->qpt = clean(qVolQuantity(q_jets,getpt));
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.53: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity gettau32 = [](qjetwrapper w) { return w.tau32; };
             outjet->qtau32 = clean(qVolQuantity(q_jets,gettau32));
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.54: %f",sw->RealTime()*1000)); sw->Start(); }
 
             JetQuantity gettau21 = [](qjetwrapper w) { return w.tau21; };
             outjet->qtau21 = clean(qVolQuantity(q_jets,gettau21));
 
-            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.6: %f",sw->RealTime()*1000)); sw->Start(); }
+            tr.TriggerSubEvent("qvol");
           }
 
           //////////// heat map! ///////////////
           if (doHeatMap) {
             outjet->hmap = HeatMap(sdJetCA.eta(),sdJetCA.phi(),sdConstituentsCA,1.5,20,20);
 
-            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.7: %f",sw->RealTime()*1000)); sw->Start(); }
+            tr.TriggerSubEvent("heat map");
           }
 
           //////////// subjet kinematics! /////////
@@ -584,7 +583,7 @@ void Analyzer::Run() {
             }
           }
 
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.8: %f",sw->RealTime()*1000)); sw->Start(); }
+          tr.TriggerSubEvent("subjet kinematics");
 
           //////////// kinematic fit! ///////////
           if (doKinFit) {
@@ -601,7 +600,7 @@ void Analyzer::Run() {
                 outjet->fitmassW = fitresults->fitmassW;
               }
             }
-            if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.9: %f",sw->RealTime()*1000)); sw->Start(); }
+            tr.TriggerSubEvent("kinematic fit");
 
           }
           
@@ -635,7 +634,10 @@ void Analyzer::Run() {
               outjet->mW_minalphapull = sdsubjets[0].m();
             }
           }
-          if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 2.10: %f",sw->RealTime()*1000)); sw->Start(); }
+          tr.TriggerSubEvent("pulls");
+
+          /////// shower deco ///////
+          // TODO 
 
           /////// fill ////////
           anafatjet->outtree->Fill();
@@ -644,14 +646,13 @@ void Analyzer::Run() {
           PError("SCRAMJetAnalyzer::Run","No jet was clustered???");
         }
 
+        tr.TriggerEvent("fat jet",false);
       } // loop over jets
     } // loop over jet collections
 
-    if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run",TString::Format(" 3: %f",sw->RealTime()*1000)); sw->Start(); }
 
   } // entry loop
 
-  if (DEBUG) { delete sw; sw=0; }
   if (DEBUG) { PDebug("SCRAMJetAnalyzer::Run","Done with entry loop"); }
 
 } // Run()
