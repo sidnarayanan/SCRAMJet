@@ -121,7 +121,7 @@ public:
 
 };
 
-void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNManager *manager) {
+void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNManager *manager, bool useMin=true) {
   unsigned int nC = constituents.size();
   double halfBeta = beta/2.;
 
@@ -184,7 +184,8 @@ void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNMa
           if (doI1||doI2||doI3) {
             double angle_1=999; unsigned int index_1=999;
             for (unsigned int iA=0; iA!=nAngles; ++iA) {
-              if (angles[iA]<angle_1) {
+              if ((useMin && angles[iA]<angle_1)  || 
+                  (!useMin && angles[iA]>angle_1)) {
                 angle_1 = angles[iA];
                 index_1 = iA;
               }
@@ -193,7 +194,8 @@ void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNMa
               double angle_2=999; 
               for (unsigned int jA=0; jA!=nAngles; ++jA) {
                 if (jA==index_1) continue;
-                if (angles[jA]<angle_2) {
+                if ((useMin && angles[jA]<angle_2)  || 
+                    (!useMin && angles[jA]>angle_2)) {
                   angle_2 = angles[jA];
                 }
               }
@@ -241,7 +243,8 @@ void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNMa
             if (doI1||doI2) {
               double angle_1=999; unsigned int index_1=999;
               for (unsigned int iA=0; iA!=nAngles; ++iA) {
-                if (angles[iA]<angle_1) {
+                if ((useMin && angles[iA]<angle_1)  || 
+                    (!useMin && angles[iA]>angle_1)) {
                   angle_1 = angles[iA];
                   index_1 = iA;
                 }
@@ -250,7 +253,8 @@ void calcECFN(double beta, std::vector<fastjet::PseudoJet> &constituents, ECFNMa
                 double angle_2=999; 
                 for (unsigned int jA=0; jA!=nAngles; ++jA) {
                   if (jA==index_1) continue;
-                  if (angles[jA]<angle_2) {
+                  if ((useMin && angles[jA]<angle_2)  || 
+                      (!useMin && angles[jA]>angle_2)) {
                     angle_2 = angles[jA];
                   }
                 }

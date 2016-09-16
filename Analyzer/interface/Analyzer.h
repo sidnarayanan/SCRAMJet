@@ -212,6 +212,7 @@ public :
             TString ecfname = "ecfN_"+makeECFString(o,N,beta);
             // accidentally works - accessing a missing element creates it and returns reference
             t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
+            t->Branch(("max"+ecfname).Data(),&(ecfns["max"+ecfname]),("max"+ecfname+"/f").Data());
             if (N==3) {
               t->Branch("min_s"+ecfname,&(subecfns["min_s"+ecfname]),"min_s"+ecfname+"/f");
               t->Branch("sum_s"+ecfname,&(subecfns["sum_s"+ecfname]),"sum_s"+ecfname+"/f");
@@ -259,6 +260,7 @@ public :
         for (auto N : Ns) {
           for (auto o : orders) {
             ecfns["ecfN_"+makeECFString(o,N,beta)] = -1;
+            ecfns["maxecfN_"+makeECFString(o,N,beta)] = -1;
             if (N==3) {
               subecfns["min_secfN_"+makeECFString(o,N,beta)] = 999;
               subecfns["sum_secfN_"+makeECFString(o,N,beta)] = 0;
