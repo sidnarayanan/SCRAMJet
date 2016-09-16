@@ -34,6 +34,9 @@ class FatJetFiller : virtual public BaseFiller
         edm::Handle<reco::JetTagCollection> btags_handle;
         edm::EDGetTokenT<reco::JetTagCollection> btags_token;
 
+        edm::Handle<edm::ValueMap<float>> qgl_handle;
+        edm::EDGetTokenT<edm::ValueMap<float>> qgl_token;
+
         float minPt=180, maxEta=2.5;
         float jetRadius;
 

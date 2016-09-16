@@ -33,7 +33,7 @@ if isData:
        ]
 else:
    fileList = [
-       'file:/tmp/snarayan/test_miniaod.root'
+       '/store/mc/RunIISpring16MiniAODv2/ZprimeToWW_narrow_M-1000_13TeV-madgraph/MINIAODSIM/PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/54EEF262-7B27-E611-9468-A0369F7FC070.root'
        ]
 ### do not remove the line below!
 ###FILELIST###
@@ -312,13 +312,13 @@ process.p = cms.Path(
                     )
 
 ## DEBUG -- dump the event content with all the value maps ..
-process.output = cms.OutputModule(
-                "PoolOutputModule",
-                      fileName = cms.untracked.string('pool.root'),
-                      )
-process.output_step = cms.EndPath(process.output)
-
-process.schedule = cms.Schedule(
-		process.p,
-		process.output_step)
+# process.output = cms.OutputModule(
+#                 "PoolOutputModule",
+#                       fileName = cms.untracked.string('pool.root'),
+#                       )
+# process.output_step = cms.EndPath(process.output)
+# 
+# process.schedule = cms.Schedule(
+# 		process.p,
+# 		process.output_step)
 ##

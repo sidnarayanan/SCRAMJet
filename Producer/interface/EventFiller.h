@@ -19,6 +19,8 @@ class EventFiller : virtual public BaseFiller
         edm::EDGetTokenT<GenEventInfoProduct> gen_token;
         edm::Handle<GenEventInfoProduct> gen_handle;
         
+        edm::Handle<reco::VertexCollection> vtx_handle;
+        edm::EDGetTokenT<reco::VertexCollection> vtx_token;
 
     private:
         scramjet::PEvent *data;

@@ -15,6 +15,7 @@ namespace scramjet
         lumiNumber(0),
         eventNumber(0),
         isData(false),
+        npv(0),
         mcWeight(-1)
         {}
     ~PEvent(){}
@@ -22,6 +23,7 @@ namespace scramjet
     int runNumber, lumiNumber;
     ULong64_t eventNumber;
     bool isData;
+    int npv;
     float mcWeight;
     ClassDef(PEvent,1)
   };

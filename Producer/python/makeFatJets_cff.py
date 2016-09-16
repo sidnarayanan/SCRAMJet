@@ -185,6 +185,18 @@ def makeFatJets(process,isData,pfCandidates,algoLabel,jetRadius):
   newSeq += getattr(process,customLabel+'SDKinematics')
   newSeq += getattr(process,customLabel+'Njettiness')
 
+  ### subjet qg-tagging ###
+
+  from RecoJets.JetProducers.QGTagger_cfi import *
+  setattr(process,customLabel+'SubQGTag',
+      QGTagger.clone(
+        srcJets = cms.InputTag('PFJets'+"SoftDrop"+customLabel,'SubJets'),
+        jetsLabel = cms.string('QGL_AK4PFchs')
+      )
+  )
+
+  newSeq += getattr(process,customLabel+'SubQGTag')
+
   ### subjet b-tagging ###
 
   setattr(process,customLabel+'PFImpactParameterTagInfos',
