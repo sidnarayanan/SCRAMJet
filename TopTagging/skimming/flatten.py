@@ -31,7 +31,7 @@ def addbranches(fpath,additionalcut=None):
   jets = fin.Get('puppiCA15')
   ba = root.BranchAdder()
 
-  hpt = gethisto(jets,'pt',250,600,additionalcut)
+  hpt = gethisto(jets,'pt',250,1000,additionalcut)
   ba.formula = 'pt'
   ba.newBranchName = 'ptweight'
   ba.AddBranchFromHistogram(jets,hpt)
