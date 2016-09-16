@@ -30,6 +30,9 @@ int EventFiller::analyze(const edm::Event& iEvent){
       data->mcWeight = gen_handle->weight();
     }
 
+    iEvent.getByToken(vtx_token,vtx_handle);
+    data->npv = vtx_handle->size();
+
     return 0;
 }
 

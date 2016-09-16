@@ -62,7 +62,7 @@ if __name__ == "__main__":
     skimmer.Run()
     skimmer.Terminate()
 
-    mvcmd = 'lcg-cp -v -D srmv2 -b file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms/store/user/snarayan/scramjet_v3/batch/%s'%outfilename
+    mvcmd = 'lcg-cp -v -D srmv2 -b file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms/store/user/snarayan/scramjet_v4/batch/%s'%outfilename
     PInfo(sname,mvcmd)
     system(mvcmd)
     system('rm input.root')

@@ -15,12 +15,15 @@ parser.add_argument('--exclude',nargs='+',type=str,default=None)
 args = parser.parse_args()
 
 eos = getenv('EOS')
-histdir = getenv('SCRAMJETHIST')
-#cernboxdir = getenv('SCRAMJETHIST_CERNBOX')
-#cernboxbdir = getenv('SCRAMJETHIST_CERNBOXB')
+eos = getenv('HOME')+'/eos'
+
+eoshistdirs=[
+      eos+'/cms/store/user/snarayan/scramjet/',
+      eos+'/cms/store/group/phys_exotica/monotop/scramjet/'
+    ]
+
 listOfFiles=[]
-#for dire in [histdir,cernboxdir,cernboxbdir]:
-for dire in [histdir]:
+for dire in eoshistdirs:
   print 'searching in',dire
   listOfFiles += glob(dire+'/*/*/*/*/scramjet_*.root')
 
@@ -48,9 +51,13 @@ cfgFile = open(args.outfile,'w')
 
 couldNotFind = []
 
+fcounter=0
 for f in sorted(listOfFiles):
   if stat(f).st_size==0:
     continue
+  if fcounter%100==0:
+    print fcounter,'/',len(listOfFiles)
+  fcounter += 1
   ff = f.split('/')
   if 'cernbox' in f:
     if 'bmaier' in f:
@@ -64,7 +71,10 @@ for f in sorted(listOfFiles):
   else:
     pd = ff[-5]
     start=11
-    fileName = "${EOS}"
+    if 'phys_exotica' in f:
+      fileName = "${EOSEXOTICA}"
+    else:
+      fileName = "${EOS}"
   for iF in xrange(start,len(ff)):
     fileName += "/"
     fileName += ff[iF]

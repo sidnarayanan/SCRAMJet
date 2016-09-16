@@ -58,6 +58,7 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
     iEvent.getByToken(rho_token,rho_handle);
     iEvent.getByToken(subjets_token,subjets_handle);
     iEvent.getByToken(btags_token,btags_handle);
+    iEvent.getByToken(qgl_token,qgl_handle);
 
     FactorizedJetCorrector *corrector=0;
     corrector = ( iEvent.isRealData() ) ? mDataJetCorrector : mMCJetCorrector;
@@ -127,6 +128,7 @@ int FatJetFiller::analyze(const edm::Event& iEvent){
 
         reco::JetBaseRef sjBaseRef(reco::PFJetRef(subjets_handle,i-subjetCol->begin()));
         subjet->csv = (float)(*(btags_handle.product()))[sjBaseRef];
+        subjet->qgl = (float)(*(qgl_handle.product()))[sjBaseRef];
 
         subjet_data->push_back(subjet);
         

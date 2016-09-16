@@ -7,8 +7,7 @@ from RecoJets.JetProducers.ak4GenJets_cfi import ak4GenJets
 from PhysicsTools.PatAlgos.tools.pfTools import *
 from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
 from RecoBTag.Configuration.RecoBTag_cff import *
-
-
+from RecoJets.JetProducers.QGTagger_cfi import *
 
 
 def initFatJets(process,isData):
@@ -184,6 +183,17 @@ def makeFatJets(process,isData,pfCandidates,algoLabel,jetRadius):
 
   newSeq += getattr(process,customLabel+'SDKinematics')
   newSeq += getattr(process,customLabel+'Njettiness')
+
+  ### subjet qg-tagging ###
+
+  setattr(process,customLabel+'SubQGTag',
+      QGTagger.clone(
+        srcJets = cms.InputTag('PFJets'+"SoftDrop"+customLabel,'SubJets'),
+        jetsLabel = cms.string('QGL_AK4PFchs')
+      )
+  )
+
+  newSeq += getattr(process,customLabel+'SubQGTag')
 
   ### subjet b-tagging ###
 

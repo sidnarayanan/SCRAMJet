@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#define DEBUG 1
+#define DEBUG 0
 using namespace scramjet;
 using namespace std;
 
@@ -475,6 +475,14 @@ void Analyzer::Run() {
               for (auto N : Ns) {
                 for (auto o : orders) {
                   outjet->ecfns["ecfN_"+makeECFString(o,N,beta)] = ecfnmanager->ecfns[TString::Format("%i_%i",N,o)];
+                }
+              }
+            }
+            for (auto beta : betas) {
+              calcECFN(beta,sdConstituentsCAFiltered,ecfnmanager,false);
+              for (auto N : Ns) {
+                for (auto o : orders) {
+                  outjet->ecfns["maxecfN_"+makeECFString(o,N,beta)] = ecfnmanager->ecfns[TString::Format("%i_%i",N,o)];
                 }
               }
             }
