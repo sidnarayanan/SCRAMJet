@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-from sys import exit
 from glob import glob
 from os import stat,getenv
 from PandaCore.Tools.process import *
 from re import sub
+import sys
 import argparse
-from ROOT import TFile,TTree
+
+print 'starting'
 
 parser = argparse.ArgumentParser(description='make config file')
 parser.add_argument('outfile',metavar='outfile',type=str)
@@ -14,7 +15,10 @@ parser.add_argument('--include',nargs='+',type=str,default=None)
 parser.add_argument('--exclude',nargs='+',type=str,default=None)
 args = parser.parse_args()
 
-eos = getenv('EOS')
+sys.argv=[]
+from ROOT import TFile,TTree
+
+#eos = getenv('EOS')
 eos = getenv('HOME')+'/eos'
 
 eoshistdirs=[

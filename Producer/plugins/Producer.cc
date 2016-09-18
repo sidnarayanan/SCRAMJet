@@ -27,7 +27,7 @@ Producer::Producer(const edm::ParameterSet& iConfig)
     skim->minPt           = 200;
     skim->minMass         = 0;
     skim->maxEta          = 2.5;
-    //obj.push_back(skim);
+    obj.push_back(skim);
 
     PFCandFiller *puppicands = new PFCandFiller("puppicands");
     puppicands->which_cand   = PFCandFiller::kRecoPF;
