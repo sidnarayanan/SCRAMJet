@@ -6,7 +6,7 @@ from PandaCore.Tools.Misc import *
 from os import getenv
 from sys import argv
 
-import cfgECFN as cfg
+import cfgInvar as cfg
 
 Load('Learning','TMVABranchAdder')
 
@@ -18,12 +18,13 @@ ba.treename='puppiCA15'
 for v in cfg.variables:
   ba.AddVariable(v[0],v[0])
 
+for v in cfg.formulae:
+  ba.AddFormula(v[0],v[0])
+
 for s in cfg.spectators:
   ba.AddSpectator(s[0])
 
 ba.BookMVA('top_ecf_bdt',workdir+'/training/top_ecfbdt_BDT.weights.xml')
 
-for f in ['ZpTT','QCD']:
-  PInfo(argv[0],'Running '+f)
-  ba.RunFile(workdir+'/'+f+'.root')
+ba.RunFile(workdir+'/'+argv[1]+'.root')
 

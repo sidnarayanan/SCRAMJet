@@ -21,7 +21,7 @@ def gethisto(tree,formula,binlo,binhi,additionalcut=None):
     if val:
       h.SetBinContent(iB,1./val)
     else:
-      print formula,iB
+      print formula,h.GetBinCenter(iB)
 
   return h
 
@@ -56,8 +56,9 @@ if which=='ZpTT':
   addbranches(scramjet+'/ZpTT.root','matched==1&&gensize<1.2')
 elif which=='ZpWW':
   addbranches(scramjet+'/ZpWW.root','matched==1&&gensize<1.2')
-elif which=="ZH":
-  addbranches(scramjet+'/ZHbb_mH125.root','matched==1&&gensize<1.2')
+elif which=="ZpA0h":
+  addbranches(scramjet+'/ZpA0h.root')
+  #addbranches(scramjet+'/ZpA0h.root','matched==1&&gensize<1.2')
 else:
   addbranches(scramjet+'/QCD.root')
 

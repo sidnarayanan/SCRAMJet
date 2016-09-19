@@ -3,6 +3,8 @@
 variables = [
             ]
 
+formulae = []
+
 spectators = [
           ('tau32','F'),
           ('tau32SD','F'),

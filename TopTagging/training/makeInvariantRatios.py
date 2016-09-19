@@ -40,8 +40,20 @@ for numE in ecfns:
       r += makeECFString(denE,power)
     ratios.append(r)
 
+variables = [
+            ]
+
+spectators = [
+          ('tau32','F'),
+          ('tau32SD','F'),
+          ('pt','F'),
+          ('mSD','F'),
+             ]
+
+formulae = []
 
 for r in ratios:
+  formulae.append((r,'F'))
   print r
 
 
