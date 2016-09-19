@@ -26,9 +26,13 @@ if __name__ == "__main__":
     start=clock()
 
     eosPath = 'root://eoscms.cern.ch//store/user/snarayan'
+    eosEXOPath = 'root://eoscms.cern.ch//store/group/phys_exotica'
     cernboxPath = 'root://eosuser//eos/user/s/snarayan'
     cernboxBPath = 'root://eosuser//eos/user/b/bmaier'
-    fullPath = sub(r'\${CERNBOXB}',cernboxBPath,sub(r'\${CERNBOX}',cernboxPath,sub(r'\${EOS}',eosPath,longName)))
+    fullPath = sub(r'\${CERNBOXB}',cernboxBPath,
+        sub(r'\${CERNBOX}',cernboxPath,
+          sub(r'\${EOS}',eosPath,
+            sub(r'\${EOSEXOTICA}',eosEXOPath,longName))))
     PInfo(sname,fullPath)
 
     system('xrdcp %s input.root'%fullPath)
@@ -38,11 +42,11 @@ if __name__ == "__main__":
     skimmer.doHeatMap=False
     skimmer.doECF=True
     skimmer.doKinFit=True
-    skimmer.doQjets=False
-    skimmer.maxJets=1
+    skimmer.doQjets=True
     skimmer.firstEvent=first
     skimmer.lastEvent=last
 
+    skimmer.maxJets=2
     if 'TT' in fullPath:
       skimmer.processType=root.Analyzer.kTop
     elif 'WW' in fullPath:
@@ -51,6 +55,7 @@ if __name__ == "__main__":
       skimmer.processType=root.Analyzer.kH
     else:
       skimmer.processType=root.Analyzer.kQCD
+      skimmer.maxJets=1
     
     fin = root.TFile.Open('input.root')
     tree = fin.FindObjectAny("events")

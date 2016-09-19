@@ -55,6 +55,7 @@ void Analyzer::ResetBranches() {
   mcWeight=-1; 
   runNumber=-1; 
   eventNumber=-1; 
+  npv=-1;
   lumiNumber=-1; 
 
   for (auto *a : anajets) {
@@ -76,6 +77,7 @@ void Analyzer::AddEventBranches(TTree *tout) {
   tout->Branch("runNumber",&runNumber,"runNumber/I");
   tout->Branch("eventNumber",&eventNumber,"eventNumber/l");
   tout->Branch("lumiNumber",&lumiNumber,"lumiNumber/I");
+  tout->Branch("npv",&npv,"npv/I");
 }
 
 
@@ -260,6 +262,7 @@ void Analyzer::Run() {
     runNumber = event->runNumber;
     lumiNumber = event->lumiNumber;
     eventNumber = event->eventNumber;
+    npv = event->npv;
 
     tr.TriggerEvent("initialize");
 
@@ -567,14 +570,20 @@ void Analyzer::Run() {
             // first set up the pairs
             double dR2 = DeltaR2(subjets->at(0),subjets->at(1));
             double mW = Mjj(subjets->at(0),subjets->at(1));
-            sjpairs.emplace_back(dR2,mW);
+            double sumqg = subjets->at(0)->qgl + subjets->at(1)->qgl;
+            sjpairs.emplace_back(dR2,mW,sumqg);
+            outjet->sumqg=sumqg;
+            outjet->minqg = TMath::Min(subjets->at(0)->qgl,subjets->at(1)->qgl);
             if (outjet->nsubjets>2) {
               dR2 = DeltaR2(subjets->at(0),subjets->at(2));
               mW = Mjj(subjets->at(0),subjets->at(2));
-              sjpairs.emplace_back(dR2,mW);
+              sumqg = subjets->at(0)->qgl + subjets->at(2)->qgl;
+              sjpairs.emplace_back(dR2,mW,sumqg);
+
               dR2 = DeltaR2(subjets->at(1),subjets->at(2));
               mW = Mjj(subjets->at(1),subjets->at(2));
-              sjpairs.emplace_back(dR2,mW);
+              sumqg = subjets->at(1)->qgl + subjets->at(2)->qgl;
+              sjpairs.emplace_back(dR2,mW,sumqg);
 
               // now order by dR
               std::sort(sjpairs.begin(),sjpairs.end(),orderByDR);
@@ -584,11 +593,19 @@ void Analyzer::Run() {
               // now by mW
               std::sort(sjpairs.begin(),sjpairs.end(),orderByMW);
               outjet->mW_best=sjpairs[0].mW;
+              
+              // now sumqg
+              std::sort(sjpairs.begin(),sjpairs.end(),orderByQG);
+              outjet->mW_qg=sjpairs[0].mW;
+              outjet->sumqg += subjets->at(2)->qgl;
+              outjet->minqg = TMath::Min(outjet->minqg,subjets->at(2)->qgl);
             } else {
               outjet->dR2_minDR=sjpairs[0].dR2;
               outjet->mW_minDR=subjets->at(0)->m;
               outjet->mW_best = (TMath::Abs(subjets->at(0)->m-WMASS)<TMath::Abs(subjets->at(1)->m-WMASS)) ? subjets->at(0)->m : subjets->at(1)->m;
+              outjet->mW_qg=sjpairs[0].mW;
             }
+            outjet->avgqg = outjet->sumqg/outjet->nsubjets;
           }
 
           tr.TriggerSubEvent("subjet kinematics");

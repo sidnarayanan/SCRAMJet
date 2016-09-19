@@ -5,7 +5,7 @@ cfgname=$SUBMIT_CFG
 WD=$PWD
 
 cd $CMSSW_BASE/
-tar -chvzf 8011.tgz src python biglib bin lib objs test external # h = --dereference symlinks
+tar -chzf 8011.tgz src python biglib bin lib objs test external # h = --dereference symlinks
 mv 8011.tgz $WD
 
 cd ${CMSSW_BASE}/src/SCRAMJet/SubMIT

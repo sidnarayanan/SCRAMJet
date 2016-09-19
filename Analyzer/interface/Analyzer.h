@@ -62,14 +62,20 @@ double clean(double x, double d=-1) {
 
 class sjpair {
   public:
-    sjpair(float dR2_, float mW_) {
+    sjpair(float dR2_, float mW_, float sumqg_) {
       dR2 = dR2_;
       mW = mW_;
+      sumqg = sumqg_;
     }
     ~sjpair() {}
   float dR2=-1;
   float mW=-1;
+  float sumqg=-1;
 };
+
+bool orderByQG(sjpair p1, sjpair p2) {
+  return p1.sumqg > p2.sumqg;
+}
 
 bool orderByDR(sjpair p1, sjpair p2) {
   // order in increasing dR order
@@ -206,6 +212,10 @@ public :
       t->Branch("alphapull3",&alphapull3,"alphapull3/f");
       t->Branch("mW_minalphapull",&mW_minalphapull,"mW_minalphapull/f");
       t->Branch("minpullalpha",&minpullangle,"minpullalpha/f");
+      t->Branch("sumqg",&sumqg,"sumqg/f");
+      t->Branch("minqg",&minqg,"minqg/f");
+      t->Branch("avgqg",&avgqg,"avgqg/f");
+      t->Branch("mW_qg",&mW_qg,"mW_qg/f");
       for (auto beta : betas) {
         for (auto N : Ns) {
           for (auto o : orders) {
@@ -255,6 +265,8 @@ public :
       alphapull1=999;alphapull2=999;alphapull3=999;
       mW_minalphapull=-1;
       minpullangle=999;
+      // QGL
+      sumqg=-1; minqg=-1; avgqg=-1; mW_qg=-1;
       // ecf
       for (auto beta : betas) {
         for (auto N : Ns) {
@@ -296,6 +308,8 @@ public :
     float betapull1=0,betapull2=0,betapull3=0;
     float alphapull1=0,alphapull2=0,alphapull3=0;
     float mW_minalphapull=0, minpullangle=0;
+    // QGL
+    float sumqg=0, minqg=0, avgqg=0, mW_qg=0;
 
   };
 
@@ -397,6 +411,7 @@ private:
   int runNumber;
   int lumiNumber;
   ULong64_t eventNumber; 
+  int npv;
   float mcWeight;
 
   // fastjet
