@@ -2,36 +2,35 @@
 
 import ROOT as root
 from PandaCore.Tools.Load import *
+from PandaCore.Tools.Misc import *
 from os import getenv
+
+import cfgAll as cfg
+#import makeInvariantRatios as cfg
 
 Load('Learning','TMVATrainer')
 
-workdir = getenv('HOME')+'/work/skims/scramjet_v1/'
+workdir = getenv('SCRAMJETFLAT')
 
-trainer = root.TMVATrainer('ecfbdt',workdir+'training/')
+trainer = root.TMVATrainer('top_allbdt',workdir+'training/')
 trainer.treename = 'puppiCA15'
 trainer.sigweight = 'ptweight*normalizedWeight'
-trainer.bgweight = 'ptweight*normalizedWeight'
-trainer.sigcut = 'matched==1&&gensize<1.2&&pt<600'
-trainer.bgcut = 'pt<600'
+trainer.bgweight = 'ptweight_analytic*normalizedWeight'
+sanitycut='tau32>0 && pt<1000 && mSD>110 && mSD<210'
+#trainer.bgcut = tAND(sanitycut,'eventNumber%15==0')
+trainer.bgcut =sanitycut
+trainer.sigcut = tAND(sanitycut,'matched==1 && gensize<1.2')
 
-ecfnstring = 'ecfN_%i_%i_%.2i'
-for N in [2,3,4]:
-  for order in [1,2,3]:
-    if N==4 and order==3:
-      continue
-    if N==2 and order!=1:
-      continue
-    for beta in [5,10,20]:
-      trainer.AddVariable(ecfnstring%(order,N,beta),'F')
+for v in cfg.variables:
+  trainer.AddVariable(v[0],v[1])
 
-trainer.AddSpectator('tau32','F')
-trainer.AddSpectator('tau32SD','F')
-trainer.AddSpectator('pt','F')
-trainer.AddSpectator('mSD','F')
-#trainer.AddSpectator('TMath::Log(mSD/pt)','F','rho')
+for v in cfg.formulae:
+  trainer.AddVariable(v[0],v[1])
 
-trainer.SetFiles(workdir+'/ZpTT.root',workdir+'/QCD.root')
+for s in cfg.spectators:
+  trainer.AddSpectator(s[0],s[1])
+
+trainer.SetFiles(workdir+'/ZpTT.root',workdir+'/QCD_evt10.root')
 trainer.BookBDT()
 trainer.TrainAll()
 

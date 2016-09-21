@@ -26,6 +26,18 @@ def gethisto(tree,formula,binlo,binhi,additionalcut=None):
   return h
 
 
+def addbranchesFormula(fpath,additionalcut=None):
+  fin = root.TFile(fpath,'UPDATE')
+  jets = fin.Get('puppiCA15')
+  ba = root.BranchAdder()
+
+  ba.formula = '1./(250*TMath::Exp((232-pt)*0.0396)+200*TMath::Exp((235-pt)*0.0157)+TMath::Exp((583.-pt)*0.00672))'
+  ba.newBranchName = 'ptweight_analytic'
+  ba.AddBranchFromFormula(jets)
+
+  fin.WriteTObject(jets,'puppiCA15','Overwrite')
+  fin.Close()
+
 def addbranches(fpath,additionalcut=None):
   fin = root.TFile(fpath,'UPDATE')
   jets = fin.Get('puppiCA15')
@@ -36,6 +48,7 @@ def addbranches(fpath,additionalcut=None):
   ba.newBranchName = 'ptweight'
   ba.AddBranchFromHistogram(jets,hpt)
 
+  '''
   hmSD = gethisto(jets,'mSD',0,500,additionalcut)
   ba.formula = 'mSD'
   ba.newBranchName = 'mSDweight'
@@ -45,9 +58,10 @@ def addbranches(fpath,additionalcut=None):
   ba.formula = 'TMath::Log(mSD/pt)'
   ba.newBranchName = 'rhoweight'
   ba.AddBranchFromHistogram(jets,hrho)
+  '''
 
   fin.WriteTObject(jets,'puppiCA15','Overwrite')
-
+  fin.Close()
 
 which = argv[1]
 scramjet = getenv('SCRAMJETFLAT')
@@ -57,9 +71,10 @@ if which=='ZpTT':
 elif which=='ZpWW':
   addbranches(scramjet+'/ZpWW.root','matched==1&&gensize<1.2')
 elif which=="ZpA0h":
-  addbranches(scramjet+'/ZpA0h.root')
-  #addbranches(scramjet+'/ZpA0h.root','matched==1&&gensize<1.2')
+  #addbranches(scramjet+'/ZpA0h.root')
+  addbranches(scramjet+'/ZpA0h.root','matched==1&&gensize<1.2')
 else:
-  addbranches(scramjet+'/QCD.root')
+  addbranchesFormula(scramjet+'/'+which+'.root')
+  addbranches(scramjet+'/'+which+'.root')
 
 

@@ -30,9 +30,9 @@ if not args.cut:
   label = 'nocut'
   plotlabel = None
 elif args.cut=='mass':
-  cut = tAND(cut,'mSD>60 && mSD<120')
+  cut = tAND(cut,'mSD>100 && mSD<150')
   label = 'massCut_'
-  plotlabel = '60 < m_{SD} < 120 GeV'
+  plotlabel = '100 < m_{SD} < 150 GeV'
 elif args.cut=='masstau':
   cut = tAND(cut,'mSD>60 && mSD<120 && tau21<0.4')
   label = 'masstauCut_'
@@ -52,7 +52,7 @@ plot.SetMCWeight('normalizedWeight*ptweight')
 #plot.CloneTrees(True) # doesn't work if friends are added
 
 ### DEFINE PROCESSES ###
-matched = root.Process('W',root.kExtra1); matched.additionalCut = tcut('matched==1 && gensize<1.2')
+matched = root.Process('Higgs',root.kExtra1); matched.additionalCut = tcut('matched==1 && gensize<1.2')
 unmatched = root.Process('Unmatched',root.kExtra2); unmatched.additionalCut = tcut('matched==0 || gensize>1.2')
 qcd = root.Process('QCD',root.kExtra3)
 #processes = [qcd,unmatched,matched]
@@ -62,8 +62,9 @@ for p in processes:
   p.Init("puppiCA15")
 
 ### ASSIGN FILES TO PROCESSES ###
-matched.AddFile(basedir+'ZpWW.root')
-qcd.AddFile(basedir+'QCD.root')
+matched.AddFile(basedir+'ZpA0h.root')
+#qcd.AddFile(basedir+'QCD.root')
+qcd.AddFile(basedir+'QCD_evt25.root')
 
 for p in processes:
   plot.AddProcess(p)
@@ -77,10 +78,10 @@ if plotlabel:
 dists = []
 
 min_secfN = root.Distribution('min_secfN_1_3_20',0,0.001,50,'min(_{1}e_{3},subjets) #beta=2','Events')
-dists.append(min_secfN)
+#dists.append(min_secfN)
 
 sum_secfN = root.Distribution('sum_secfN_1_3_20',0,0.05,50,'sum(_{1}e_{3},subjets) #beta=2','Events')
-dists.append(sum_secfN)
+#dists.append(sum_secfN)
 
 avg_secfN = root.Distribution('avg_secfN_1_3_20',0,0.01,50,'avg(_{1}e_{3},subjets) #beta=2','Events')
 dists.append(avg_secfN)
@@ -95,10 +96,10 @@ alpha2 = root.Distribution('TMath::Abs(alphapull2)',0,3.14,50,'Subleading pT #al
 dists.append(alpha2)
 
 beta1 = root.Distribution('betapull1',-3.14,3.14,50,'Leading pT #beta angle','Events',999,-999,'beta1')
-dists.append(beta1)
+#dists.append(beta1)
 
 beta2 = root.Distribution('betapull2',-3.14,3.14,50,'Subleading pT #beta angle','Events',999,-999,'beta2')
-dists.append(beta2)
+#dists.append(beta2)
 
 for beta in [5,10,20]:
   M2 = root.Distribution('ecfN_1_3_%.2i/ecfN_1_2_%.2i'%(beta,beta),0,.25,50,'M_{2}(#beta=%.1f)'%(beta/10.),'Events',999,-999,'M2_%.2i'%beta)
@@ -127,6 +128,9 @@ dists.append(pt)
 
 rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,2,50,'#rho','Events',999,-999,'rho')
 dists.append(rho)
+
+bdt = root.Distribution('higgs_ecf_bdt',-.5,.5,50,'BDT','Events')
+dists.append(bdt)
 
 for d in dists:
   plot.AddDistribution(d)

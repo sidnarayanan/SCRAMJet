@@ -17,7 +17,7 @@ if not args.cut:
   exit(1)
 elif args.cut=='mass':
   cut = 'massCut_' 
-  plotlabel = '60 < m_{SD} < 120 GeV'
+  plotlabel = '100 < m_{SD} < 150 GeV'
 elif args.cut=='masstau':
   cut = 'masstauCut_'
   plotlabel = '#splitline{60 < m_{SD} < 120 GeV}{#tau_{21}<0.6}'
@@ -35,8 +35,8 @@ roc.SetFile(fin)
 roc.c.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 variables = [
-  ('BDT','ecfN BDT'),
-  ('min_secfN_1_3_20','min(1e3)'),
+  ('higgs_ecf_bdt','ecfN BDT'),
+#  ('min_secfN_1_3_20','min(1e3)'),
   ('avg_secfN_1_3_20','avg(1e3)'),
   ('alpha1','Leading #alpha'),
   ('alpha2','Subleading #alpha'),
@@ -44,21 +44,22 @@ variables = [
   ('tau21','#tau_{21}'),
   ('tau21SD','groomed #tau_{21}'),
             ] 
-for beta in [5,10,20]:
+for beta in [5,20]:
   variables.append( ('M2_%.2i'%beta,'M2, #beta=%.1f'%(beta/10.)) )
-for beta in [5,10,20]:
+for beta in [5,20]:
   variables.append( ('N2_%.2i'%beta,'N2, #beta=%.1f'%(beta/10.)) )
-for beta in [5,10,20]:
+for beta in [5,20]:
   variables.append( ('D2_%.2i'%beta,'D2, #beta=%.1f'%(beta/10.)) )
 
 for iV in xrange(len(variables)):
   v,vlabel = variables[iV]
+  print v
   if 'mW' in v or v=='fitmassW':
-    roc.CalcROC('h_%s_W'%v,'h_%s_QCD'%v,vlabel,iV,1,2)
-  elif 'BDT' in v:
-    roc.CalcROC('h_%s_W'%v,'h_%s_QCD'%v,vlabel,iV,2,1)
+    roc.CalcROC('h_%s_Higgs'%v,'h_%s_QCD'%v,vlabel,iV,1,2)
+  elif 'BDT' in v or 'bdt' in v:
+    roc.CalcROC('h_%s_Higgs'%v,'h_%s_QCD'%v,vlabel,iV,2,1)
   else:
-    roc.CalcROC('h_%s_W'%v,'h_%s_QCD'%v,vlabel,iV,1,1)
+    roc.CalcROC('h_%s_Higgs'%v,'h_%s_QCD'%v,vlabel,iV,1,1)
 
 roc.DrawAll(figsdir,cut+'roc')
 

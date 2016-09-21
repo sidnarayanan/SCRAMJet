@@ -35,10 +35,11 @@ roc.SetFile(fin)
 roc.c.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 variables = [
+  ('top_all_bdt','All BDT'),
   ('top_ecf_bdt','ecfN BDT'),
   #('min_secfN_1_3_20','min(1e3)'),
   ('avg_secfN_1_3_20','avg(1e3)'),
-  #('mW_minalpha','m_{W}, min pull'),
+  ('mW_minalpha','m_{W}, min pull'),
   ('mW_minDR','m_{W}, min #DeltaR'),
   #('mW_best','best m_{W}'),
   ('alpha1','Leading #alpha'),
@@ -50,10 +51,12 @@ variables = [
   ('N3_20','N3, #beta=2.0'),
   ('tau32','#tau_{32}'),
   ('tau32SD','groomed #tau_{32}'),
+  ('qmass','Q-vol(mass)'),
+  ('qtau32','Q-vol(tau32)'),
             ] 
 for iV in xrange(len(variables)):
   v,vlabel = variables[iV]
-  if 'mW' in v or v=='fitmassW':
+  if v=='fitmassW':
     roc.CalcROC('h_%s_Top'%v,'h_%s_QCD'%v,vlabel,iV,1,2)
   elif 'bdt' in v:
     roc.CalcROC('h_%s_Top'%v,'h_%s_QCD'%v,vlabel,iV,2,1)

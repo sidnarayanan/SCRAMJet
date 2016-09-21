@@ -24,10 +24,10 @@ basedir = args.indir
 Load('Drawers','PlotUtility')
 
 ### DEFINE REGIONS ###
-cut = 'pt<600'
+cut = 'pt<1000'
 #cut = ''
 if not args.cut:
-  label = 'nocut'
+  label = 'noCut_'
   plotlabel = None
 elif args.cut=='mass':
   cut = tAND(cut,'mSD>110 && mSD<210')
@@ -48,13 +48,17 @@ plot.InitLegend(0.7,0.7,0.88,0.9)
 plot.Stack(False)
 plot.SetNormFactor(True)
 plot.SetCut(tcut(cut))
-plot.SetMCWeight('normalizedWeight*ptweight')
+plot.SetMCWeight('normalizedWeight')
+#plot.SetMCWeight('normalizedWeight*ptweight')
 #plot.CloneTrees(True) # doesn't work if friends are added
 
 ### DEFINE PROCESSES ###
-matched = root.Process('Top',root.kExtra1); matched.additionalCut = tcut('matched==1 && gensize<1.2')
-unmatched = root.Process('Unmatched',root.kExtra2); unmatched.additionalCut = tcut('matched==0 || gensize>1.2')
+matched = root.Process('Top',root.kExtra1)
+matched.additionalCut = tcut('matched==1 && gensize<1.2')
+matched.additionalWeight = tcut('ptweight')
+
 qcd = root.Process('QCD',root.kExtra3)
+qcd.additionalWeight = tcut('ptweight_analytic')
 #processes = [qcd,unmatched,matched]
 processes = [qcd,matched]
 
@@ -63,8 +67,7 @@ for p in processes:
 
 ### ASSIGN FILES TO PROCESSES ###
 matched.AddFile(basedir+'ZpTT.root')
-unmatched.AddFile(basedir+'ZpTT.root')
-qcd.AddFile(basedir+'QCD_evt25.root')
+qcd.AddFile(basedir+'QCD_evt10.root')
 
 for p in processes:
   plot.AddProcess(p)
@@ -76,6 +79,9 @@ if plotlabel:
   plot.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 dists = []
+
+fitmassRatio = root.Distribution('fitmassW/fitmass',0,2,50,'Fit m_{W}/m_{t}','Events',999,-999,'fitmassRatio')
+dists.append(fitmassRatio)
 
 qmass = root.Distribution('qmass',0,0.5,50,'RMS_{Q}(mass)','Events')
 dists.append(qmass)
@@ -95,13 +101,13 @@ dists.append(minqg)
 avgqg = root.Distribution('avgqg',0,1,50,'avg QGL','Events')
 dists.append(avgqg)
 
-W3_05 = root.Distribution("maxecfN_2_4_05/TMath::Power(maxecfN_1_3_05,2)",1.4,1.8,50,"W_{3}(#beta=0.5)","Events",999,-999,"W3_05");
+W3_05 = root.Distribution("maxecfN_2_4_05/TMath::Power(maxecfN_1_3_05,2)",1.45,1.65,50,"W_{3}(#beta=0.5)","Events",999,-999,"W3_05");
 dists.append(W3_05)
 
-W3_10 = root.Distribution("maxecfN_2_4_10/TMath::Power(maxecfN_1_3_10,2)",1.4,1.8,50,"W_{3}(#beta=1.0)","Events",999,-999,"W3_10");
+W3_10 = root.Distribution("maxecfN_2_4_10/TMath::Power(maxecfN_1_3_10,2)",1.45,1.65,50,"W_{3}(#beta=1.0)","Events",999,-999,"W3_10");
 dists.append(W3_10)
 
-W3_20 = root.Distribution("maxecfN_2_4_20/TMath::Power(maxecfN_1_3_20,2)",1.2,2,50,"W_{3}(#beta=2.0)","Events",999,-999,"W3_20");
+W3_20 = root.Distribution("maxecfN_2_4_20/TMath::Power(maxecfN_1_3_20,2)",1.48,1.7,50,"W_{3}(#beta=2.0)","Events",999,-999,"W3_20");
 dists.append(W3_20)
 
 N3_10 = root.Distribution("ecfN_2_4_10/TMath::Power(ecfN_1_3_10,2)",0.5,3.5,50,"N_{3}(#beta=1.0)","Events",999,-999,"N3_10");
@@ -113,8 +119,8 @@ dists.append(N3_05)
 N3_20 = root.Distribution("ecfN_2_4_20/TMath::Power(ecfN_1_3_20,2)",0,5,50,"N_{3}(#beta=2.0)","Events",999,-999,"N3_20");
 dists.append(N3_20)
 
-min_secfN = root.Distribution('min_secfN_1_3_20',0,0.001,50,'min(_{1}e_{3},subjets) #beta=2','Events')
-#dists.append(min_secfN)
+min_secfN = root.Distribution('min_secfN_1_3_20',0,0.0002,50,'min(_{1}e_{3},subjets) #beta=2','Events')
+dists.append(min_secfN)
 
 sum_secfN = root.Distribution('sum_secfN_1_3_20',0,0.05,50,'sum(_{1}e_{3},subjets) #beta=2','Events')
 #dists.append(sum_secfN)
@@ -164,14 +170,17 @@ dists.append(tau32SD)
 msd = root.Distribution("mSD",0,500,50,'m_{SD} [GeV]','Events/10 GeV')
 dists.append(msd)
 
-pt = root.Distribution("pt",250,600,50,'p_{T} [GeV]','Events/7 GeV')
+pt = root.Distribution("pt",250,1000,50,'p_{T} [GeV]','Events/15 GeV')
 dists.append(pt)
 
 rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,2,50,'#rho','Events',999,-999,'rho')
 dists.append(rho)
 
-bdt = root.Distribution('top_ecf_bdt',-.5,.5,50,'BDT','Events')
-dists.append(bdt)
+ecfbdt = root.Distribution('top_ecf_bdt',-.5,.5,50,'ECF BDT','Events')
+dists.append(ecfbdt)
+
+allbdt = root.Distribution('top_all_bdt',-.5,.5,50,'All BDT','Events')
+dists.append(allbdt)
 
 for d in dists:
   plot.AddDistribution(d)
