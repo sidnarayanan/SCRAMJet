@@ -33,14 +33,6 @@ elif args.cut=='mass':
   cut = tAND(cut,'mSD>110 && mSD<210')
   label = 'massCut_'
   plotlabel = '110 < m_{SD} < 210 GeV'
-elif args.cut=='masstau':
-  cut = tAND(cut,'mSD>110 && mSD<210 && tau32<0.6')
-  label = 'masstauCut_'
-  plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{#tau_{32}<0.6}'
-elif args.cut=='tau':
-  cut = tAND(cut,'tau32<0.6')
-  label = 'tauCut_'
-  plotlabel = '#tau_{32}<0.6'
 
 ### LOAD PLOTTING UTILITY ###
 plot = root.PlotUtility()

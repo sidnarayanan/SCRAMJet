@@ -24,7 +24,7 @@ basedir = args.indir
 Load('Drawers','PlotUtility')
 
 ### DEFINE REGIONS ###
-cut = 'pt<600'
+cut = 'pt<1000'
 #cut = ''
 if not args.cut:
   label = 'nocut'
@@ -48,13 +48,16 @@ plot.InitLegend(0.7,0.7,0.88,0.9)
 plot.Stack(False)
 plot.SetNormFactor(True)
 plot.SetCut(tcut(cut))
-plot.SetMCWeight('normalizedWeight*ptweight')
+plot.SetMCWeight('normalizedWeight')
 #plot.CloneTrees(True) # doesn't work if friends are added
 
 ### DEFINE PROCESSES ###
-matched = root.Process('Higgs',root.kExtra1); matched.additionalCut = tcut('matched==1 && gensize<1.2')
-unmatched = root.Process('Unmatched',root.kExtra2); unmatched.additionalCut = tcut('matched==0 || gensize>1.2')
+matched = root.Process('Higgs',root.kExtra4); 
+matched.additionalCut = tcut('matched==1 && gensize<1.2')
+matched.additionalWeight = tcut('ptweight')
+
 qcd = root.Process('QCD',root.kExtra3)
+qcd.additionalWeight = tcut('ptweight_analytic')
 #processes = [qcd,unmatched,matched]
 processes = [qcd,matched]
 
@@ -64,7 +67,7 @@ for p in processes:
 ### ASSIGN FILES TO PROCESSES ###
 matched.AddFile(basedir+'ZpA0h.root')
 #qcd.AddFile(basedir+'QCD.root')
-qcd.AddFile(basedir+'QCD_evt25.root')
+qcd.AddFile(basedir+'QCD_evt10.root')
 
 for p in processes:
   plot.AddProcess(p)
@@ -76,6 +79,18 @@ if plotlabel:
   plot.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 dists = []
+
+allbdt = root.Distribution('higgs_all_bdt',-.5,.5,50,'All BDT','Events')
+dists.append(allbdt)
+
+finalbdt = root.Distribution('higgs_final_bdt',-.5,.5,50,'Final BDT','Events')
+dists.append(finalbdt)
+
+allnodrbdt = root.Distribution('higgs_allbutminDR_bdt',-.5,.5,50,'All (no min #DeltaR) BDT','Events')
+dists.append(allnodrbdt)
+
+ecfbdt = root.Distribution('higgs_ecf_bdt',-.5,.5,50,'ECF BDT','Events')
+dists.append(ecfbdt)
 
 min_secfN = root.Distribution('min_secfN_1_3_20',0,0.001,50,'min(_{1}e_{3},subjets) #beta=2','Events')
 #dists.append(min_secfN)
@@ -123,14 +138,14 @@ dists.append(tau21SD)
 msd = root.Distribution("mSD",0,500,50,'m_{SD} [GeV]','Events/10 GeV')
 dists.append(msd)
 
-pt = root.Distribution("pt",250,600,50,'p_{T} [GeV]','Events/7 GeV')
+pt = root.Distribution("pt",250,1000,50,'p_{T} [GeV]','Events/15 GeV')
 dists.append(pt)
 
 rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,2,50,'#rho','Events',999,-999,'rho')
 dists.append(rho)
 
-bdt = root.Distribution('higgs_ecf_bdt',-.5,.5,50,'BDT','Events')
-dists.append(bdt)
+qtau21 = root.Distribution("qtau21",0,1,50,'Q-vol(#tau_{21})','Events/0.02')
+dists.append(qtau21)
 
 for d in dists:
   plot.AddDistribution(d)

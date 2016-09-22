@@ -65,38 +65,6 @@ plot.SetNormFactor(True)
 
 ctmp = root.TCanvas()
 
-def getPtShapes(tree,vtag,vkin,cut):
-  global counter
-  ctmp.cd()
-  nkinbins=20
-  h2 = root.TH2F('h2_%i'%counter,'h2_%i'%counter,1000,vtag.lo,vtag.hi,nkinbins,vkin.lo,vkin.hi)
-  tree.Draw('%s:%s>>h2_%i'%(vkin.formula,vtag.formula,counter),cut,'colz')
-  counter += 1
-  shapes = {}
-  scan = range(1,1001)
-  if not vtag.normal: # cut is inverted:
-    scan.reverse()
-  total = h2.Integral()
-  iT=0
-  for iB_ in xrange(len(scan)):
-    if iT==len(thresholds):
-      break
-    threshold = thresholds[iT]
-    iB = scan[iB_]
-    if vtag.normal:
-      val = h2.Integral(1,iB,1,nkinbins)
-    else:
-      val = h2.Integral(iB,1000,1,nkinbins)
-    if val/total >= threshold:
-      h1 = root.TH1F('h1_%i'%counter,'h1_%i'%counter,nkinbins,vkin.lo,vkin.hi)
-      for jB in scan[iB_:]:
-        for kB in range(1,nkinbins+1):
-          h1.SetBinContent(kB,h1.GetBinContent(kB)+h2.GetBinContent(jB,kB))
-      shapes[threshold] = h1
-      counter += 1
-      iT += 1
-  return shapes
-
 def getShapes(tree,vtag,vkin,cut,weight):
   global counter
   ctmp.cd()
@@ -121,6 +89,7 @@ def getShapes(tree,vtag,vkin,cut,weight):
     else:
       val = h1.Integral(iB,1000)
     if val/total >= threshold:
+      print h1.GetBinCenter(iB),val,total,threshold
       h1kin = root.TH1F('h1_%i'%counter,'h1_%i'%counter,nkinbins,vkin.lo,vkin.hi)
       tag = h1.GetBinCenter(iB)
       if vtag.normal:
@@ -158,21 +127,22 @@ def drawShapes(listOfShapes,nickname,axis,labels):
   plot.Draw(args.outdir+'/',nickname+'_'+axis)
 
 varlist = [
-      Variable('top_all_bdt',-0.5,0.5,'top_all_bdt'),
-      Variable('top_ecf_bdt',-0.5,0.5,'top_ecf_bdt'),
+      Variable('minqg',-10,10,'minqg'),
 
-      Variable('tau32',0,1,'tau32',False),
-      Variable('tau32SD',0,1,'tau32SD',False),
-      Variable('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,2.5,'N3_05',False),
-      Variable('ecfN_2_4_10/pow(ecfN_1_3_10,2)',0.5,3.5,'N3_10',False),
-      Variable('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,'N3_20',False),
-      Variable('mW_minalphapull',0,300,'mW_minalpha'),
-      Variable('mW_minDR',0,300,'mW_minDR'),
-      Variable('TMath::Abs(alphapull1)',0,3.2,'alpha1',False),
-      Variable('qmass',0,0.5,'qmass',False),
-      Variable('qtau32',0,0.5,'qtau32',False),
-      Variable('avg_secfN_1_3_20',0,0.1,'avg_secfN',False),
-      Variable('fitmassW/fitmass',0,1.1,'fitmassRatio',False),
+      Variable('top_all_bdt',-0.5,0.5,'top_all_bdt'),
+#      Variable('top_ecf_bdt',-0.5,0.5,'top_ecf_bdt'),
+#      Variable('tau32',0,1,'tau32',False),
+#      Variable('tau32SD',0,1,'tau32SD',False),
+#      Variable('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,2.5,'N3_05',False),
+#      Variable('ecfN_2_4_10/pow(ecfN_1_3_10,2)',0.5,3.5,'N3_10',False),
+#      Variable('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,'N3_20',False),
+#      Variable('mW_minalphapull',0,300,'mW_minalpha'),
+#      Variable('mW_minDR',0,300,'mW_minDR'),
+#      Variable('TMath::Abs(alphapull1)',0,3.2,'alpha1',False),
+#      Variable('qmass',0,0.5,'qmass',False),
+#      Variable('qtau32',0,0.5,'qtau32',False),
+#      Variable('avg_secfN_1_3_20',0,0.1,'avg_secfN',False),
+#      Variable('fitmassW/fitmass',0,1.1,'fitmassRatio',False),
 #      Variable('fitprob',0,1,'fitprob'),
     ]
 

@@ -12,15 +12,15 @@ import argparse
 
 ##Color palette
 ncontours = 999;
-stops = [ 0.0000,         0.10,     0.200,      0.30,    0.4000,      0.50,    0.7500,    0.8750,    1.0000]
-red   = [ 243./255., 243./255., 240./255., 240./255., 241./255., 255./255., 186./255., 151./255., 129./255.]
-green = [   0./255.,  46./255.,  99./255., 149./255., 194./255., 255./255., 183./255., 166./255., 147./255.]
-blue  = [   6./255.,   8./255.,  36./255.,  91./255., 169./255., 255./255., 246./255., 240./255., 233./255.]
+stops = [ 0.0000,         0.10,     0.200,      0.30,    0.4000,      0.50,     0.6000,      0.70,   0.800,     0.900,    1.0000]
+red   = [ 255./255., 240./255., 240./255., 240./255., 243./255., 255./255.,  169./255.,  91./255., 36./255.,   8./255.,   6./255.]
+green = [   0./255.,  46./255.,  99./255., 149./255., 194./255., 255./255.,  194./255., 149./255., 99./255.,  46./255.,   0./255.]
+blue  = [   6./255.,   8./255.,  36./255.,  91./255., 169./255., 255./255.,  243./255., 240./255.,240./255., 240./255., 233./255.]
 stopsArray = array('d',stops)
 redArray   = array('d',red)
 greenArray = array('d',green)
 blueArray  = array('d',blue)
-root.TColor.CreateGradientColorTable(9, stopsArray, redArray, greenArray, blueArray, ncontours);
+root.TColor.CreateGradientColorTable(11, stopsArray, redArray, greenArray, blueArray, ncontours);
 root.gStyle.SetNumberContours(ncontours);
 
 basedir = getenv('SCRAMJETFLAT')
@@ -46,17 +46,21 @@ c = root.TCanvas()
 varlist = [
       ('tau32','tau32'),
       ('tau32SD','tau32SD'),
-      ('fitprob','fitprob'),
-      ('fitmassW','fitmassW'),
-      ('mW_minDR','mW_minDR'),
-      ('TMath::Sqrt(dR2_minDR)','minDR'),
-      ('ecfN_2_4_05/TMath::Power(ecfN_1_3_05,2)','N3_0.5'),
+#      ('fitprob','fitprob'),
+#      ('fitmassW','fitmassW'),
+#      ('mW_minDR','mW_minDR'),
+      ('alphapull1','alpha1'),
+      ('qtau32','qtau32'),
+      ('qmass','qmass'),
+#      ('ecfN_2_4_05/TMath::Power(ecfN_1_3_05,2)','N3_0.5'),
       ('ecfN_2_4_10/TMath::Power(ecfN_1_3_10,2)','N3_1.0'),
       ('ecfN_2_4_20/TMath::Power(ecfN_1_3_20,2)','N3_2.0'),
+      ('minqg','minqg'),
+      ('top_ecf_bdt','BDT'),
     ]
 
-sp = SquarePlotter(args.indir+'/ZpTT.root',args.indir+'/QCD.root','puppiCA15')
-hcovsig,hcovbg = sp.makeCorrPlots(varlist,'ptweight*normalizedWeight*(matched==1&&gensize<1.2&&mSD<210&&mSD>110)','ptweight*normalizedWeight*(mSD<210&&mSD>110)')
+sp = SquarePlotter(args.indir+'/ZpTT.root',args.indir+'/QCD_evt10.root','puppiCA15')
+hcovsig,hcovbg = sp.makeCorrPlots(varlist,'ptweight*normalizedWeight*(matched==1&&gensize<1.2&&mSD<210&&mSD>110)','ptweight_analytic*normalizedWeight*(mSD<210&&mSD>110)')
 
 c.Clear(); c.cd()
 hcovsig.Draw('colz')

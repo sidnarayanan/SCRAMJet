@@ -2,7 +2,6 @@
 
 from PandaCore.Tools.Load import *
 from PandaCore.Tools.Misc import *
-from PandaCore.Drawers.SquarePlots import SquarePlotter
 from os import system,mkdir,getenv
 from sys import argv
 from array import array
@@ -48,10 +47,10 @@ else:
       0.75: root.kRed+3,
       0.9 : root.kRed+2,
       0.95: root.kRed+1,
-      0.99: root.kRed+0,
+      0.98: root.kRed+0,
       }    
   #thresholds=[0,0.5,.75,.9,.95]
-  thresholds=[0,0.5,.75,.9,.95,.99]
+  thresholds=[0,0.5,.75,.9,.95,.98]
 
 argv = [] # clear before loading root
 from ROOT import gROOT, gSystem
@@ -134,35 +133,46 @@ def getShapes(tree,vtag,vkin,cut,weight):
   return shapes
 
 
-def drawShapes(listOfShapes,nickname):
+def drawShapes(listOfShapes,nickname,axis,labels):
   plot.Reset()
+  plot.AddCMSLabel()
   pt=5
+  for l in labels:
+    plot.AddPlotLabel(labels[l],.18,l,False,42,.04)
   for t in thresholds:
     h = listOfShapes[t]
-    h.GetXaxis().SetTitle(nickname.replace('_',' ')+' [GeV]')
+    h.GetXaxis().SetTitle(axis+' [GeV]')
     h.GetYaxis().SetTitle('a.u.')
     h.SetLineColor(colors[t])
     h.SetNormFactor()
     h.SetLineWidth(3)
-    if args.signal:
+    '''
+    '''
+    if t==0:
+      plot.AddHistogram(h,'inclusive',pt,colors[t])
+    elif args.signal:
       plot.AddHistogram(h,'%2i%% eff.'%(100-int(t*100)),pt,colors[t])
     else:
       plot.AddHistogram(h,'%2i%% rej.'%(int(t*100)),pt,colors[t])
     pt += 1
-  plot.Draw(args.outdir+'/',nickname)
+  plot.Draw(args.outdir+'/',nickname+'_'+axis)
 
 varlist = [
+      Variable('higgs_final_bdt',-0.5,0.5,'higgs_final_bdt'),
+      Variable('higgs_all_bdt',-0.5,0.5,'higgs_all_bdt'),
+      Variable('higgs_allbutminDR_bdt',-0.5,0.5,'higgs_allbutminDR_bdt'),
+      Variable('higgs_ecf_bdt',-0.5,0.5,'higgs_ecf_bdt'),
+      Variable('avg_secfN_1_3_20',0,0.1,'avg_secfN_1_3_20',False),
       Variable('tau21',0,1,'tau21',False),
       Variable('tau21SD',0,1,'tau21SD',False),
-      Variable('sqrt(dR2_minDR)',0,1.5,'minDR',False),
       Variable('alphapull1',0,3.14,'alpha1',False),
-      Variable('alphapull2',0,3.14,'alpha2',False),
-      Variable('alphapull3',0,3.14,'alpha3',False),
       Variable('qtau21',0,1,'qtau21',False),
+      Variable('ecfN_1_3_20/ecfN_1_2_20',0,0.25,'M2',False),
+      Variable('ecfN_2_3_20/pow(ecfN_1_2_20,2)',0,0.5,'N2',False),
+      Variable('ecfN_3_3_20/pow(ecfN_1_2_20,2)',0,5,'D2',False),
       #Variable('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,2.5,'N3_05',False),
       #Variable('ecfN_2_4_10/pow(ecfN_1_3_10,2)',0.5,3.5,'N3_10',False),
       #Variable('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,'N3_20',False),
-      #Variable('higgs_ecf_bdt',-0.5,0.5,'higgs_ecf_bdt')
     ]
 
 if args.signal:
@@ -177,15 +187,20 @@ for v in varlist:
   else:
     weight = 'ptweight_analytic*normalizedWeight'
   cut = 'pt<1000'
-  label = 'signal_' if args.signal else ''
+  label = 'Signal' if args.signal else 'QCD'
   if args.signal:
     cut = tAND(cut,'matched==1&&gensize<1.2')
 
   ptshapes = getShapes(tree,v,Variable('pt',250,1000,'pt'),tAND(cut,'mSD>100&&mSD<150'),weight)
-  drawShapes(ptshapes,label+v.nickname+'_pt')
+  labels = {.76:v.nickname,
+            .80:label,
+            .72:'100<m_{SD}<150 [GeV]'}
+  drawShapes(ptshapes,label+v.nickname,'pt',labels)
 
-  massshapes = getShapes(tree,v,Variable('mSD',0,500,'mSD'),cut,weight)
-  drawShapes(massshapes,label+v.nickname+'_mSD')
+  massshapes = getShapes(tree,v,Variable('mSD',20,500,'mSD'),cut,weight)
+  labels = {.76:v.nickname,
+            .80:label}
+  drawShapes(massshapes,label+v.nickname,'mSD',labels)
 
   #massshapes = getShapes(tree,v,Variable('2*log(mSD/pt)',-6,0,'rho'),tAND(cut,'mSD>50'),'normalizedWeight')
   #drawShapes(massshapes,label+v.nickname+'_rho')
