@@ -9,15 +9,18 @@ logpath=getenv('SUBMIT_LOGDIR')
 workpath=getenv('SUBMIT_WORKDIR')
 uid=getuid()
 
-cfgfile = open(cmssw_base+'/src/SCRAMJet/SubMIT/config/'+cfgname+'.cfg')
+cfgpath = cmssw_base+'/src/SCRAMJet/SubMIT/config/'+cfgname+'.cfg'
+cfgfile = open(cfgpath)
 njobs = len(list(cfgfile))
+
+system('cp %s %s/local.cfg'%(cfgpath,workpath))
 
 classad='''
 universe = vanilla
 executable = {0}/exec.sh
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
-transfer_input_files = {0}/scramjet.tgz
+transfer_input_files = {0}/scramjet.tgz,{0}/local.cfg
 transfer_output_files = ""
 input = /dev/null
 output = {1}/$(Cluster)_$(Process).out
@@ -45,7 +48,9 @@ x509userproxy = /tmp/x509up_u{2}
 queue {3}
 '''.format(workpath,logpath,uid,njobs)
 
-with open(logpath+'/condor.jdl','w') as jdlfile:
-  jdlfile.write(classad)
+print classad
 
-system('condor_submit %s/condor.jdl'%logpath)
+#with open(logpath+'/condor.jdl','w') as jdlfile:
+#  jdlfile.write(classad)
+
+#system('condor_submit %s/condor.jdl'%logpath)
