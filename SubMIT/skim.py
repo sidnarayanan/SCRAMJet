@@ -41,8 +41,8 @@ if __name__ == "__main__":
     skimmer.isData=False
     skimmer.doHeatMap=False
     skimmer.doECF=True
-    skimmer.doKinFit=True
-    skimmer.doQjets=True
+    skimmer.doKinFit=False
+    skimmer.doQjets=False
     skimmer.firstEvent=first
     skimmer.lastEvent=last
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
       skimmer.processType=root.Analyzer.kTop
     elif 'WW' in fullPath:
       skimmer.processType=root.Analyzer.kV
-    elif 'ZH' in fullPath:
+    elif ('ZH' in fullPath) or ('A0h' in fullPath):
       skimmer.processType=root.Analyzer.kH
     else:
       skimmer.processType=root.Analyzer.kQCD
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     skimmer.Run()
     skimmer.Terminate()
 
-    mvcmd = 'lcg-cp -v -D srmv2 -b file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms/store/user/snarayan/scramjet_v4/batch/%s'%outfilename
+    mvcmd = 'lcg-cp -v -D srmv2 -b file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms/store/user/snarayan/scramjet/v5/batch/%s'%outfilename
     PInfo(sname,mvcmd)
     system(mvcmd)
     system('rm input.root')

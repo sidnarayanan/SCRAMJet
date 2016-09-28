@@ -52,9 +52,10 @@
 // some misc definitions
 #define WMASS 80.4
 
-std::vector<double> betas = {0.5, 1.0, 2.0};
+std::vector<double> betas = {0.5, 1.0, 2.0, 4.0};
 std::vector<int> Ns = {1,2,3,4}; // only used for making branches and stuff
 std::vector<int> orders = {1,2,3};
+std::vector<int> subidxs = {0,1,2}; // only used for making branches and stuff
 
 double clean(double x, double d=-1) {
   return (x==x) ? x : d;
@@ -68,6 +69,9 @@ class sjpair {
       sumqg = sumqg_;
     }
     ~sjpair() {}
+    void print() {
+      PInfo("SCRAMJetAnalyzer::sjpair",TString::Format("dR2=%.3f; mW=%.3f; sumqg=%.3f",dR2,mW,sumqg));
+    }
   float dR2=-1;
   float mW=-1;
   float sumqg=-1;
@@ -99,6 +103,11 @@ bool orderPseudoJet(fastjet::PseudoJet j1, fastjet::PseudoJet j2) {
 bool orderByCSV(scramjet::PJet *j1, scramjet::PJet *j2) {
   // order PJets by decreasing csv
   return j1->csv > j2->csv;
+}
+
+bool orderByPT(scramjet::PJet *j1, scramjet::PJet *j2) {
+  // order PJets by decreasing pt
+  return j1->pt > j2->pt;
 }
 
 double DeltaR2(scramjet::PJet *j1, scramjet::PJet *j2) {
@@ -184,12 +193,18 @@ public :
       t->Branch("mSD",&mSD,"mSD/f");
       t->Branch("tau32",&tau32,"tau32/f");
       t->Branch("tau21",&tau21,"tau21/f");
+      t->Branch("tau3",&tau3,"tau3/f");
+      t->Branch("tau2",&tau2,"tau2/f");
+      t->Branch("tau1",&tau1,"tau1/f");
       t->Branch("gensize",&gensize,"gensize/f");
       t->Branch("genpt",&genpt,"genpt/f");
       t->Branch("idx",&idx,"idx/I");
       t->Branch("matched",&matched,"matched/I");
       t->Branch("tau32SD",&tau32SD,"tau32SD/f");
       t->Branch("tau21SD",&tau21SD,"tau21SD/f");
+      t->Branch("tau3SD",&tau3SD,"tau3SD/f");
+      t->Branch("tau2SD",&tau2SD,"tau2SD/f");
+      t->Branch("tau1SD",&tau1SD,"tau1SD/f");
       t->Branch("heatmap",&hmap);
       t->Branch("fitmass",&fitmass,"fitmass/f");
       t->Branch("fitmassW",&fitmassW,"fitmassW/f");
@@ -222,14 +237,23 @@ public :
             TString ecfname = "ecfN_"+makeECFString(o,N,beta);
             // accidentally works - accessing a missing element creates it and returns reference
             t->Branch(ecfname.Data(),&(ecfns[ecfname]),(ecfname+"/f").Data());
-            t->Branch(("max"+ecfname).Data(),&(ecfns["max"+ecfname]),("max"+ecfname+"/f").Data());
+            /*
             if (N==3) {
               t->Branch("min_s"+ecfname,&(subecfns["min_s"+ecfname]),"min_s"+ecfname+"/f");
               t->Branch("sum_s"+ecfname,&(subecfns["sum_s"+ecfname]),"sum_s"+ecfname+"/f");
               t->Branch("avg_s"+ecfname,&(subecfns["avg_s"+ecfname]),"avg_s"+ecfname+"/f");
             }
+            */
           }
         }
+      }
+      for (auto subidx : subidxs) {
+        TString sname = TString::Format("_%i",subidx);
+        t->Branch("subjet_pt"+sname,&(subpts[subidx]),"subjet_pt"+sname+"/f");
+        t->Branch("subjet_eta"+sname,&(subetas[subidx]),"subjet_eta"+sname+"/f");
+        t->Branch("subjet_phi"+sname,&(subphis[subidx]),"subjet_phi"+sname+"/f");
+        t->Branch("subjet_m"+sname,&(subms[subidx]),"subjet_m"+sname+"/f");
+        t->Branch("subjet_csv"+sname,&(subcsvs[subidx]),"subjet_csv"+sname+"/f");
       }
     }
 
@@ -238,6 +262,7 @@ public :
       pt = j->pt; eta = j->eta; phi = j->phi; 
       m = j->m; rawpt = j->rawPt; mSD = j->mSD;
       tau32 = clean(j->tau3/j->tau2); tau21 = clean(j->tau2/j->tau1);
+      tau3=j->tau3; tau2=j->tau2; tau1=j->tau1;
 
       mincsv=999; maxcsv=-999;
       for (auto *sj : *(j->subjets)) {
@@ -249,8 +274,10 @@ public :
     void reset() {
       pt=-1; eta=999; phi=999; m=-1; rawpt=-1; maxcsv=-1; mincsv=-1;
       mSD=-1; tau32=-1; tau21=-1; gensize=-1; genpt=-1;
+      tau3=-1; tau2=-1; tau1=-1;
       idx=-1; matched=-1; 
       tau32SD=-1; tau21SD=-1;
+      tau3SD=-1; tau2SD=-1; tau1SD=-1;
       //kinematic fit
       fitmass=-1; fitmassW=-1; fitprob=-1;
       fitchi2=-1; fitconv=-1;
@@ -272,25 +299,36 @@ public :
         for (auto N : Ns) {
           for (auto o : orders) {
             ecfns["ecfN_"+makeECFString(o,N,beta)] = -1;
-            ecfns["maxecfN_"+makeECFString(o,N,beta)] = -1;
+//            ecfns["maxecfN_"+makeECFString(o,N,beta)] = -1;
+            /*            
             if (N==3) {
               subecfns["min_secfN_"+makeECFString(o,N,beta)] = 999;
               subecfns["sum_secfN_"+makeECFString(o,N,beta)] = 0;
               subecfns["avg_secfN_"+makeECFString(o,N,beta)] = 0;
             }
+            */
           }
         }
       }
       if (hmap) {
         hmap->Delete(); hmap=0;
       }
+      for (auto subidx : subidxs) {
+        subpts[subidx]  = -1;
+        subetas[subidx] = -1;
+        subphis[subidx] = -1;
+        subms[subidx]   = -1;
+        subcsvs[subidx] = -1;
+      }
     }
 
     float pt=0, eta=0, phi=0, m=0, rawpt=0, maxcsv=0, mincsv=0;
     float mSD=0, tau32=0, tau21=0, gensize=0, genpt=0;
+    float tau3=0, tau2=0, tau1=0;
     int idx=-1, matched=-1; 
     // custom substructure
     float tau32SD=0, tau21SD=0;
+    float tau3SD=0, tau2SD=0, tau1SD=0;
     //ecfs
     std::map<TString,float> ecfns;
     std::map<TString,float> subecfns;
@@ -301,6 +339,7 @@ public :
     //subjet kinematics
     float dR2_minDR=0, mW_minDR=0, mW_best=0;
     int nsubjets=0;
+    std::map<int,float> subpts, subetas, subphis, subms, subcsvs;
     //qjets
     float qmass=0,qpt=0;
     float qtau32=0,qtau21=0;

@@ -5,6 +5,7 @@
 #include <vector>
 
 #define DEBUG 0
+
 using namespace scramjet;
 using namespace std;
 
@@ -429,7 +430,7 @@ void Analyzer::Run() {
         tr.TriggerSubEvent("gen matching");
 
         /////// fastjet ////////
-        VPseudoJet vpj = ConvertFatJet(pfatjet,anafatjet->pfcands,0.1);
+        VPseudoJet vpj = ConvertFatJet(pfatjet,anafatjet->pfcands,0.01);
 
         fastjet::ClusterSequenceArea seqCA(vpj, *(anafatjet->jetDefCA), *areaDef);
         fastjet::ClusterSequenceArea seqAK(vpj, *(anafatjet->jetDefAK), *areaDef);
@@ -460,8 +461,8 @@ void Analyzer::Run() {
           VPseudoJet sdConstituentsCA = sdJetCA.constituents();
           std::sort(sdConstituentsCA.begin(),sdConstituentsCA.end(),orderPseudoJet);
 
-          VPseudoJet sdConstituentsAK = sdJetAK.constituents();
-          std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
+          // VPseudoJet sdConstituentsAK = sdJetAK.constituents();
+          // std::sort(sdConstituentsAK.begin(),sdConstituentsAK.end(),orderPseudoJet);
 
           tr.TriggerSubEvent("soft drop");
 
@@ -481,6 +482,7 @@ void Analyzer::Run() {
                 }
               }
             }
+            /*
             for (auto beta : betas) {
               calcECFN(beta,sdConstituentsCAFiltered,ecfnmanager,false);
               for (auto N : Ns) {
@@ -489,40 +491,40 @@ void Analyzer::Run() {
                 }
               }
             }
+            */
 
             tr.TriggerSubEvent("ecfns");
 
             // now we calculate ECFs for the subjets
             unsigned int nS = sdsubjets.size();
-            for (auto beta : betas) {
-              if (beta<2.0)
-                continue; // speed things up for now
-              for (unsigned int iS=0; iS!=nS; ++iS) {
-                VPseudoJet subconstituents = sdsubjets[iS].constituents();
-                nFilter = TMath::Min(80,(int)subconstituents.size());
-                std::sort(subconstituents.begin(),subconstituents.end(),orderPseudoJet);
-                VPseudoJet subconstituentsFiltered(subconstituents.begin(),subconstituents.begin()+nFilter);
+            float subbeta=1.;
+            /*
+            for (unsigned int iS=0; iS!=nS; ++iS) {
+              VPseudoJet subconstituents = sdsubjets[iS].constituents();
+              nFilter = TMath::Min(80,(int)subconstituents.size());
+              std::sort(subconstituents.begin(),subconstituents.end(),orderPseudoJet);
+              VPseudoJet subconstituentsFiltered(subconstituents.begin(),subconstituents.begin()+nFilter);
 
-                calcECFN(beta,subconstituentsFiltered,subecfnmanager);
-                outjet->subecfns["min_secfN_"+makeECFString(1,3,beta)] = TMath::Min(
-                    (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,1)],
-                    (double)outjet->subecfns["min_secfN_"+makeECFString(1,3,beta)]);
-                outjet->subecfns["min_secfN_"+makeECFString(2,3,beta)] = TMath::Min(
-                    (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,2)],
-                    (double)outjet->subecfns["min_secfN_"+makeECFString(2,3,beta)]);
-                outjet->subecfns["min_secfN_"+makeECFString(3,3,beta)] = TMath::Min(
-                    (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,3)],
-                    (double)outjet->subecfns["min_secfN_"+makeECFString(3,3,beta)]);
-                outjet->subecfns["sum_secfN_"+makeECFString(1,3,beta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,1)];
-                outjet->subecfns["sum_secfN_"+makeECFString(2,3,beta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,2)];
-                outjet->subecfns["sum_secfN_"+makeECFString(3,3,beta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,3)];
-              }
-              outjet->subecfns["avg_secfN_"+makeECFString(1,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(1,3,beta)]/nS;
-              outjet->subecfns["avg_secfN_"+makeECFString(2,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(2,3,beta)]/nS;
-              outjet->subecfns["avg_secfN_"+makeECFString(3,3,beta)] = outjet->subecfns["sum_secfN_"+makeECFString(3,3,beta)]/nS;
+              calcECFN(subbeta,subconstituentsFiltered,subecfnmanager);
+              outjet->subecfns["min_secfN_"+makeECFString(1,3,subbeta)] = TMath::Min(
+                  (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,1)],
+                  (double)outjet->subecfns["min_secfN_"+makeECFString(1,3,subbeta)]);
+              outjet->subecfns["min_secfN_"+makeECFString(2,3,subbeta)] = TMath::Min(
+                  (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,2)],
+                  (double)outjet->subecfns["min_secfN_"+makeECFString(2,3,subbeta)]);
+              outjet->subecfns["min_secfN_"+makeECFString(3,3,subbeta)] = TMath::Min(
+                  (double)subecfnmanager->ecfns[TString::Format("%i_%i",3,3)],
+                  (double)outjet->subecfns["min_secfN_"+makeECFString(3,3,subbeta)]);
+              outjet->subecfns["sum_secfN_"+makeECFString(1,3,subbeta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,1)];
+              outjet->subecfns["sum_secfN_"+makeECFString(2,3,subbeta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,2)];
+              outjet->subecfns["sum_secfN_"+makeECFString(3,3,subbeta)] += subecfnmanager->ecfns[TString::Format("%i_%i",3,3)];
             }
+            outjet->subecfns["avg_secfN_"+makeECFString(1,3,subbeta)] = outjet->subecfns["sum_secfN_"+makeECFString(1,3,subbeta)]/nS;
+            outjet->subecfns["avg_secfN_"+makeECFString(2,3,subbeta)] = outjet->subecfns["sum_secfN_"+makeECFString(2,3,subbeta)]/nS;
+            outjet->subecfns["avg_secfN_"+makeECFString(3,3,subbeta)] = outjet->subecfns["sum_secfN_"+makeECFString(3,3,subbeta)]/nS;
 
             tr.TriggerSubEvent("subecfns");
+            */
 
           }
 
@@ -532,6 +534,9 @@ void Analyzer::Run() {
           double tau1 = anafatjet->tau->getTau(1,sdConstituentsCA);
           outjet->tau32SD = clean(tau3/tau2);
           outjet->tau21SD = clean(tau2/tau1);
+          outjet->tau3SD = tau3;
+          outjet->tau2SD = tau2;
+          outjet->tau1SD = tau1;
 
           tr.TriggerSubEvent("tauSD");
 
@@ -564,7 +569,16 @@ void Analyzer::Run() {
 
           //////////// subjet kinematics! /////////
           VJet *subjets = pfatjet->subjets;
+          std::sort(subjets->begin(),subjets->end(),orderByPT);
           outjet->nsubjets=subjets->size();
+          for (unsigned int iS=0; iS!=TMath::Min(3,outjet->nsubjets); ++iS) {
+            outjet->subpts[iS] = subjets->at(iS)->pt;
+            outjet->subetas[iS] = subjets->at(iS)->eta;
+            outjet->subphis[iS] = subjets->at(iS)->phi;
+            outjet->subms[iS] = subjets->at(iS)->m;
+            outjet->subcsvs[iS] = subjets->at(iS)->csv;
+          }
+
           std::vector<sjpair> sjpairs;
           if (outjet->nsubjets>1) {
             // first set up the pairs
@@ -597,13 +611,13 @@ void Analyzer::Run() {
               // now sumqg
               std::sort(sjpairs.begin(),sjpairs.end(),orderByQG);
               outjet->mW_qg=sjpairs[0].mW;
-              outjet->sumqg += subjets->at(2)->qgl;
-              outjet->minqg = TMath::Min(outjet->minqg,subjets->at(2)->qgl);
+              outjet->sumqg = subjets->at(0)->qgl+subjets->at(1)->qgl+subjets->at(2)->qgl;
+              outjet->minqg = TMath::Min(TMath::Min(subjets->at(0)->qgl,subjets->at(1)->qgl),subjets->at(2)->qgl);
             } else {
               outjet->dR2_minDR=sjpairs[0].dR2;
               outjet->mW_minDR=subjets->at(0)->m;
               outjet->mW_best = (TMath::Abs(subjets->at(0)->m-WMASS)<TMath::Abs(subjets->at(1)->m-WMASS)) ? subjets->at(0)->m : subjets->at(1)->m;
-              outjet->mW_qg=sjpairs[0].mW;
+              outjet->mW_qg = (subjets->at(0)->qgl<subjets->at(1)->qgl) ? subjets->at(0)->m : subjets->at(1)->m;
             }
             outjet->avgqg = outjet->sumqg/outjet->nsubjets;
           }
@@ -615,15 +629,21 @@ void Analyzer::Run() {
             PJet *sj1=0, *sj2=0, *sjb=0;
             if (subjets->size()>=3) {
               VJet leadingSubjets(subjets->begin(),subjets->begin()+3);
-              std::sort(leadingSubjets.begin(),leadingSubjets.end(),orderByCSV);
-              PerformKinFit(fitter,fitresults,leadingSubjets[1],leadingSubjets[2],leadingSubjets[0]); 
-              outjet->fitconv = (fitresults->converged) ? 1 : 0;
-              if (fitresults->converged) {
-                outjet->fitprob = fitresults->prob;
-                outjet->fitchi2 = fitresults->chisq;
-                outjet->fitmass = fitresults->fitmass;
-                outjet->fitmassW = fitresults->fitmassW;
+              if (leadingSubjets.at(2)->pt>2) {
+                std::sort(leadingSubjets.begin(),leadingSubjets.end(),orderByCSV);
+                PerformKinFit(fitter,fitresults,leadingSubjets[1],leadingSubjets[2],leadingSubjets[0]); 
+                outjet->fitconv = (fitresults->converged) ? 1 : 0;
+                if (fitresults->converged) {
+                  outjet->fitprob = fitresults->prob;
+                  outjet->fitchi2 = fitresults->chisq;
+                  outjet->fitmass = fitresults->fitmass;
+                  outjet->fitmassW = fitresults->fitmassW;
+                }
+              } else {
+                outjet->fitconv = 0;
               }
+            } else {
+              outjet->fitconv = 0;
             }
             tr.TriggerSubEvent("kinematic fit");
 

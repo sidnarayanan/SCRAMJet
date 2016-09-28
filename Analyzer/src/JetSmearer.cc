@@ -36,7 +36,6 @@ void JetSmearer::getUncertainties( TLorentzVector & v, double & upx, double & up
 //  double uncert_m = uncert_pt;
 
   
-  
   upx 
     = sqrt(TMath::Cos(phi)*uncert_pt*TMath::Cos(phi)*uncert_pt 
 	   + TMath::Sin(phi)*pt*uncert_phi*TMath::Sin(phi)*pt*uncert_phi);
@@ -49,7 +48,7 @@ void JetSmearer::getUncertainties( TLorentzVector & v, double & upx, double & up
   um  = uncert_pt;
   //um  = sqrt(uncert_pt*uncert_pt + upz*upz);
 
-  float inflation=1.0;
+  float inflation=2.0;
   upx *= inflation;
   upy *= inflation;
   upz *= inflation;

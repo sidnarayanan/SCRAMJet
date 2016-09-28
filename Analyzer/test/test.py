@@ -21,9 +21,9 @@ if __name__ == "__main__":
     skimmer.firstEvent=0
     skimmer.lastEvent=10
     skimmer.isData=False
-    skimmer.doHeatMap=True
+    skimmer.doHeatMap=False
     skimmer.doECF=True
-    skimmer.doQjets=True
+    skimmer.doQjets=False
     skimmer.doKinFit=False
     if 'TT' in fullPath:
       skimmer.processType = root.Analyzer.kTop

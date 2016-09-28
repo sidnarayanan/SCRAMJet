@@ -87,7 +87,7 @@ bool KinematicFitter::fit( TopCandidate & topcand, FitResults & fitres)
   
   TMatrixD VsubBtmp = B*V*TMatrixD(TMatrixD::kTransposed,B);
   TMatrixD VsubB = TMatrixD(VsubBtmp).Invert();
-  
+
   //
   // start fit loop ...
   //
@@ -263,20 +263,20 @@ void KinematicFitter::setV( TMatrixD & V, JetSmearer & myres, TopCandidate & com
   myres.getUncertainties( combo.particles[2].vec, uncert_px_2, uncert_py_2, uncert_pz_2, uncert_e_2 ); 
   
   
-  V(0,0)   = uncert_px_0*uncert_px_0;
-  V(1,1)   = uncert_py_0*uncert_py_0;
-  V(2,2)   = uncert_pz_0*uncert_pz_0;
-  V(3,3)   = uncert_e_0*uncert_e_0;
-  V(4,4)   = uncert_px_1*uncert_px_1;
-  V(5,5)   = uncert_py_1*uncert_py_1;
-  V(6,6)   = uncert_pz_1*uncert_pz_1;
-  V(7,7)   = uncert_e_1*uncert_e_1;
-  V(8,8)   = uncert_px_2*uncert_px_2;
-  V(9,9)   = uncert_py_2*uncert_py_2;
+  V(0,0)     = uncert_px_0*uncert_px_0;
+  V(1,1)     = uncert_py_0*uncert_py_0;
+  V(2,2)     = uncert_pz_0*uncert_pz_0;
+  V(3,3)     = uncert_e_0*uncert_e_0;
+  V(4,4)     = uncert_px_1*uncert_px_1;
+  V(5,5)     = uncert_py_1*uncert_py_1;
+  V(6,6)     = uncert_pz_1*uncert_pz_1;
+  V(7,7)     = uncert_e_1*uncert_e_1;
+  V(8,8)     = uncert_px_2*uncert_px_2;
+  V(9,9)     = uncert_py_2*uncert_py_2;
   V(10,10)   = uncert_pz_2*uncert_pz_2;
   V(11,11)   = uncert_e_2*uncert_e_2;
 
-  //  V.Print();
+//  V.Print();
 
 };
 
