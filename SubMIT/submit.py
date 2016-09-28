@@ -48,9 +48,8 @@ x509userproxy = /tmp/x509up_u{2}
 queue {3}
 '''.format(workpath,logpath,uid,njobs)
 
-print classad
 
-#with open(logpath+'/condor.jdl','w') as jdlfile:
-#  jdlfile.write(classad)
+with open(logpath+'/condor.jdl','w') as jdlfile:
+  jdlfile.write(classad)
 
-#system('condor_submit %s/condor.jdl'%logpath)
+system('condor_submit %s/condor.jdl'%logpath)
