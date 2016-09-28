@@ -25,7 +25,7 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 # the size of the output by prescaling the report of the event number
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 if isData:
    fileList = [
@@ -33,7 +33,8 @@ if isData:
        ]
 else:
    fileList = [
-       '/store/mc/RunIISpring16MiniAODv2/ZprimeToWW_narrow_M-1000_13TeV-madgraph/MINIAODSIM/PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/54EEF262-7B27-E611-9468-A0369F7FC070.root'
+       'file:/tmp/snarayan/test_tt_miniaod.root'
+      # '/store/mc/RunIISpring16MiniAODv2/ZprimeToWW_narrow_M-1000_13TeV-madgraph/MINIAODSIM/PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/54EEF262-7B27-E611-9468-A0369F7FC070.root'
        ]
 ### do not remove the line below!
 ###FILELIST###

@@ -6,7 +6,6 @@ from PandaCore.Tools.Misc import *
 from os import getenv
 
 import cfgInvar as cfg
-#import makeInvariantRatios as cfg
 
 Load('Learning','TMVATrainer')
 
