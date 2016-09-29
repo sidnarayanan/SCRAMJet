@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cfgname=$SUBMIT_CFG
-
 WD=$PWD
 
 cd $CMSSW_BASE/

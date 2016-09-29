@@ -67,9 +67,16 @@ if __name__ == "__main__":
     skimmer.Run()
     skimmer.Terminate()
 
-    mvcmd = 'lcg-cp -v -D srmv2 -b file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=XXXX%s'%outfilename
-    PInfo(sname,mvcmd)
-    system(mvcmd)
+    mvargs = 'file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=XXXX%s'%outfilename
+    PInfo(sname,mvargs)
+    try:
+      PInfo(sname,'Attempting to move using lcg-cp...')
+      subprocess.call('lcg-cp -v -D srmv2 -b '+mvargs)
+      PInfo(sname,'...successful!')
+    except OSError as e:
+      PWarning(sname,'lcg-cp not found, falling back to gfal-copy...')
+      subprocess.call('gfal-copy '+mvargs)
+      PInfo(sname,'...successful!')
     system('rm input.root')
 
     PInfo(sname,'finished in %f'%(clock()-start)); start=clock()
