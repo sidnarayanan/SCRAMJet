@@ -5,14 +5,14 @@ from PandaCore.Tools.Load import *
 from PandaCore.Tools.Misc import *
 from os import getenv
 
-import cfgInvar as cfg
-#import makeInvariantRatios as cfg
+#import cfgInvar as cfg
+import cfgSmall as cfg
 
 Load('Learning','TMVATrainer')
 
 workdir = getenv('SCRAMJETFLAT')
 
-trainer = root.TMVATrainer('top_ecfbdt_50',workdir+'training/')
+trainer = root.TMVATrainer('top_ecfbdt_small',workdir+'training/')
 trainer.treename = 'puppiCA15'
 trainer.sigweight = 'ptweight*normalizedWeight'
 trainer.bgweight = 'ptweight_analytic*normalizedWeight'

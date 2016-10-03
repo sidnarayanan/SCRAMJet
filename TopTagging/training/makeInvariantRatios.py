@@ -14,7 +14,7 @@ def makeECFString(e,power=1):
   if power==1:
     return base
   else:
-    return 'TMath::Power(%s,%.2f)'%(base,power)
+    return 'pow(%s,%.2f)'%(base,power)
 
 ecfns = []
 for N in [2,3,4]:
@@ -23,7 +23,7 @@ for N in [2,3,4]:
       continue
     if N==2 and order!=1:
       continue
-    for beta in [.5,1.,2.]:
+    for beta in [.5,1.,2.,4.]:
       ecfns.append(ECFN(beta,N,order))
 
 ratios = []
@@ -53,8 +53,11 @@ spectators = [
 formulae = []
 
 for r in ratios:
+  if r=='ecfN_3_3_40/pow(ecfN_1_3_05,24.00)' or r=='ecfN_2_4_40/pow(ecfN_1_4_05,16.00)' or r=='ecfN_2_3_40/pow(ecfN_1_3_05,16.00)':
+    continue
   formulae.append((r,'F'))
-  print r
+  if __name__ == "__main__":
+    print r
 
 
 

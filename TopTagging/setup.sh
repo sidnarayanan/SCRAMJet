@@ -8,7 +8,7 @@ histDir=scramjet
 export SCRAMJETHIST=${EOS}/$histDir
 
 #location of flat trees
-export SCRAMJETFLAT=${HOME}/home000/scramjet_v4/
+export SCRAMJETFLAT=${HOME}/home000/scramjet/v5/
 #export SCRAMJETFLAT=${HOME}/hadoop/scramjet/v5/
 mkdir -p $SCRAMJETFLAT/batch
 chmod 777 $SCRAMJETFLAT/batch

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from sys import exit,argv
-from PandaCore.Tools.Load import *
 import argparse
 
 parser = argparse.ArgumentParser(description='skim a file')
@@ -12,6 +11,7 @@ args = parser.parse_args()
 
 argv=[]
 
+from PandaCore.Tools.Load import *
 import ROOT as root
 Load('Tools','Cutter')
 

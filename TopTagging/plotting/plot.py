@@ -72,18 +72,6 @@ if plotlabel:
 
 dists = []
 
-fitmassRatio = root.Distribution('fitmassW/fitmass',0,2,50,'Fit m_{W}/m_{t}','Events',999,-999,'fitmassRatio')
-dists.append(fitmassRatio)
-
-qmass = root.Distribution('qmass',0,0.5,50,'RMS_{Q}(mass)','Events')
-dists.append(qmass)
-
-qpt = root.Distribution('qpt',0,0.5,50,'RMS_{Q}(pt)','Events')
-dists.append(qpt)
-
-qtau32 = root.Distribution('qtau32',0,0.5,50,'RMS_{Q}(tau32)','Events')
-dists.append(qtau32)
-
 mW_qg = root.Distribution('mW_qg',0,300,50,'Disubjet mass, max QGL [GeV]','Events/6 GeV',999,-999,'mW_qg')
 dists.append(mW_qg)
 
@@ -92,15 +80,6 @@ dists.append(minqg)
 
 avgqg = root.Distribution('avgqg',0,1,50,'avg QGL','Events')
 dists.append(avgqg)
-
-W3_05 = root.Distribution("maxecfN_2_4_05/TMath::Power(maxecfN_1_3_05,2)",1.45,1.65,50,"W_{3}(#beta=0.5)","Events",999,-999,"W3_05");
-dists.append(W3_05)
-
-W3_10 = root.Distribution("maxecfN_2_4_10/TMath::Power(maxecfN_1_3_10,2)",1.45,1.65,50,"W_{3}(#beta=1.0)","Events",999,-999,"W3_10");
-dists.append(W3_10)
-
-W3_20 = root.Distribution("maxecfN_2_4_20/TMath::Power(maxecfN_1_3_20,2)",1.48,1.7,50,"W_{3}(#beta=2.0)","Events",999,-999,"W3_20");
-dists.append(W3_20)
 
 N3_10 = root.Distribution("ecfN_2_4_10/TMath::Power(ecfN_1_3_10,2)",0.5,3.5,50,"N_{3}(#beta=1.0)","Events",999,-999,"N3_10");
 dists.append(N3_10)
@@ -111,14 +90,11 @@ dists.append(N3_05)
 N3_20 = root.Distribution("ecfN_2_4_20/TMath::Power(ecfN_1_3_20,2)",0,5,50,"N_{3}(#beta=2.0)","Events",999,-999,"N3_20");
 dists.append(N3_20)
 
-min_secfN = root.Distribution('min_secfN_1_3_20',0,0.0002,50,'min(_{1}e_{3},subjets) #beta=2','Events')
-dists.append(min_secfN)
+N3_40 = root.Distribution("ecfN_2_4_40/TMath::Power(ecfN_1_3_40,2)",0,5,50,"N_{3}(#beta=4.0)","Events",999,-999,"N3_40");
+dists.append(N3_40)
 
-sum_secfN = root.Distribution('sum_secfN_1_3_20',0,0.05,50,'sum(_{1}e_{3},subjets) #beta=2','Events')
-#dists.append(sum_secfN)
-
-avg_secfN = root.Distribution('avg_secfN_1_3_20',0,0.01,50,'avg(_{1}e_{3},subjets) #beta=2','Events')
-dists.append(avg_secfN)
+fitmassRatio = root.Distribution('fitmassW/fitmass',0,2,50,'Fit m_{W}/m_{t}','Events',999,-999,'fitmassRatio')
+dists.append(fitmassRatio)
 
 mW_minalpha = root.Distribution('mW_minalphapull',0,300,50,'Disubjet mass, min pull [GeV]','Events/6 GeV',999,-999,'mW_minalpha')
 dists.append(mW_minalpha)
