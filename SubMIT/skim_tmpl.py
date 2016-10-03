@@ -67,7 +67,7 @@ if __name__ == "__main__":
     skimmer.Run()
     skimmer.Terminate()
 
-    mvargs = 'file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms/store/user/snarayan/scramjet/v5/batch/%s'%outfilename
+    mvargs = 'file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=XXXX%s'%outfilename
     PInfo(sname,mvargs)
     try:
       PInfo(sname,'Attempting to move using lcg-cp...')
