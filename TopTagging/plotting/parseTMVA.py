@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from PandaCore.Tools.Load import *
-from PandaCore.Tools.Misc import *
 from os import system,mkdir,getenv
 from sys import argv
 from array import array
@@ -17,6 +15,8 @@ parser.add_argument('--outpath',metavar='outpath',type=str)
 args = parser.parse_args()
 
 argv = [] # clear before loading root
+from PandaCore.Tools.Load import *
+from PandaCore.Tools.Misc import *
 from ROOT import gROOT, gSystem
 import ROOT as root
 
@@ -30,7 +30,7 @@ plot.SetNormFactor(True)
 
 ctmp = root.TCanvas()
 
-def getShape(tree,classid,mvaname='BDT',mvalo=-0.5,mvahi=0.5):
+def getShape(tree,classid,mvaname='BDT',mvalo=-1,mvahi=1.):
   global counter
   ctmp.cd()
   nbins=50

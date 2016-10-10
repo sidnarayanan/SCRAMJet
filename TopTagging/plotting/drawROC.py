@@ -18,6 +18,9 @@ if not args.cut:
 elif args.cut=='mass':
   cut = 'massCut_' 
   plotlabel = '110 < m_{SD} < 210 GeV'
+elif args.cut=='btag':
+  cut = 'btagCut_' 
+  plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{max SJ CSV>0.46}:'
 elif args.cut=='masstau':
   cut = 'masstauCut_'
   plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{#tau_{32}<0.6}'
@@ -35,16 +38,21 @@ roc.SetFile(fin)
 roc.c.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 variables = [
-  ('top_all_bdt','All BDT',1,1),
-  ('top_ecf_bdt','ECF BDT',0,1),
+  #('top_all_bdt','All BDT',1,1),
+  ('top_ecfv7_bdt','ECF BDT v7',11,1),
+  ('top_ecfv6_bdt','ECF BDT v6',3,1),
+  ('top_ecfv5_bdt','ECF BDT v5',1,1),
+  #('top_ecfv3_bdt','ECF BDT v3',1,2),
+  #('top_ecfmodeled_bdt','ECF BDT v1',0,1),
+  ('top_ecf_bdt','ECF BDT',2,1),
   #('min_secfN_1_3_20','min(1e3)'),
-  ('avg_secfN_1_3_20','avg(1e3)',2,2),
+  #('avg_secfN_1_3_20','avg(1e3)',2,2),
   #('mW_minalpha','m_{W}, min pull'),
   #('mW_minDR','m_{W}, min #DeltaR'),
   #('mW_best','best m_{W}'),
   ('alpha1','#alpha angle',3,2),
   #('alpha2','Subleading #alpha'),
-  ('fitprob','P(kin fit)',4,2),
+  #('fitprob','P(kin fit)',4,2),
   #('fitmassW','m_{W}, kin fit'),
   ('N3_05','N3, #beta=0.5',11,2),
   ('N3_10','N3, #beta=1.0',6,2),
@@ -52,9 +60,10 @@ variables = [
   ('tau32','#tau_{32}',2,3),
   ('tau32SD','groomed #tau_{32}',3,3),
   #('qmass','Q-vol(mass)'),
-  ('qtau32','Q-vol(tau32)',4,3),
+  #('qtau32','Q-vol(tau32)',4,3),
             ] 
 for iV in xrange(len(variables)):
+  print variables[iV]
   if len(variables[iV])==2:
     v,vlabel = variables[iV]
     vcolor = iV

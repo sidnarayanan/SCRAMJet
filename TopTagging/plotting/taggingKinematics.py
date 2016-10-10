@@ -89,7 +89,6 @@ def getShapes(tree,vtag,vkin,cut,weight):
     else:
       val = h1.Integral(iB,1000)
     if val/total >= threshold:
-      print h1.GetBinCenter(iB),val,total,threshold
       h1kin = root.TH1F('h1_%i'%counter,'h1_%i'%counter,nkinbins,vkin.lo,vkin.hi)
       tag = h1.GetBinCenter(iB)
       if vtag.normal:
@@ -127,12 +126,14 @@ def drawShapes(listOfShapes,nickname,axis,labels):
   plot.Draw(args.outdir+'/',nickname+'_'+axis)
 
 varlist = [
-      Variable('minqg',-10,10,'minqg'),
+#      Variable('minqg',-10,10,'minqg'),
 
-      Variable('top_all_bdt',-0.5,0.5,'top_all_bdt'),
-#      Variable('top_ecf_bdt',-0.5,0.5,'top_ecf_bdt'),
-#      Variable('tau32',0,1,'tau32',False),
-#      Variable('tau32SD',0,1,'tau32SD',False),
+      Variable('top_ecfv5_bdt',-0.5,0.5,'top_ecfv5_bdt'),
+      Variable('top_ecfv6_bdt',-1.,1.,'top_ecfv6_bdt'),
+      Variable('top_ecfv7_bdt',-1.,1.,'top_ecfv7_bdt'),
+      Variable('top_ecf_bdt',-0.5,0.5,'top_ecf_bdt'),
+      Variable('tau32',0,1,'tau32',False),
+      Variable('tau32SD',0,1,'tau32SD',False),
 #      Variable('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,2.5,'N3_05',False),
 #      Variable('ecfN_2_4_10/pow(ecfN_1_3_10,2)',0.5,3.5,'N3_10',False),
 #      Variable('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,'N3_20',False),

@@ -6,8 +6,7 @@ from PandaCore.Tools.Misc import *
 from os import getenv
 from sys import argv
 
-#import cfgSmall as cfg
-import makeInvariantRatios  as cfg
+import cfgModeled as cfg
 
 Load('Learning','TMVABranchAdder')
 
@@ -25,7 +24,7 @@ for v in cfg.formulae:
 for s in cfg.spectators:
   ba.AddSpectator(s[0])
 
-ba.BookMVA('top_ecf43_bdt',workdir+'/training/top_ecfbdt_43_BDT.weights.xml')
+ba.BookMVA('top_ecfv7_bdt',workdir+'/training/top_ecfbdt_v7_BDT.weights.xml')
 
 ba.RunFile(workdir+'/'+argv[1]+'.root')
 

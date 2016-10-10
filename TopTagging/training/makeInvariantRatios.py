@@ -17,7 +17,8 @@ def makeECFString(e,power=1):
     return 'pow(%s,%.2f)'%(base,power)
 
 ecfns = []
-for N in [2,3,4]:
+#for N in [2,3,4]:
+for N in [3,4]:
   for order in [1,2,3]:
     if N==4 and order==3:
       continue
@@ -30,7 +31,8 @@ ratios = []
 for numE in ecfns:
   numString=makeECFString(numE)
   for denE in ecfns:
-    if denE.N>numE.N or denE==numE:
+#    if denE.N>numE.N or denE==numE:
+    if denE.N>=numE.N or denE==numE:
       continue
     power = numE.power/denE.power
     r=numString+'/'
@@ -44,8 +46,8 @@ variables = [
             ]
 
 spectators = [
-          ('tau32','F'),
-          ('tau32SD','F'),
+#          ('tau32','F'),
+#          ('tau32SD','F'),
           ('pt','F'),
           ('mSD','F'),
              ]

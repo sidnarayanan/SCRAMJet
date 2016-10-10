@@ -33,6 +33,10 @@ elif args.cut=='mass':
   cut = tAND(cut,'mSD>110 && mSD<210')
   label = 'massCut_'
   plotlabel = '110 < m_{SD} < 210 GeV'
+elif args.cut=='btag':
+  cut = tAND(cut,'mSD>110 && mSD<210 && maxcsv>0.46')
+  label = 'btagCut_'
+  plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{max SJ CSV>0.46}'
 
 ### LOAD PLOTTING UTILITY ###
 plot = root.PlotUtility()
@@ -147,8 +151,13 @@ dists.append(rho)
 ecfbdt = root.Distribution('top_ecf_bdt',-.5,.5,50,'ECF BDT','Events')
 dists.append(ecfbdt)
 
-allbdt = root.Distribution('top_all_bdt',-.5,.5,50,'All BDT','Events')
-dists.append(allbdt)
+ecfmodbdt = root.Distribution('top_ecfv7_bdt',-1,1,50,'ECF Modeled BDT v7','Events')
+dists.append(ecfmodbdt)
+
+#allbdt = root.Distribution('top_all_bdt',-.5,.5,50,'All BDT','Events')
+#dists.append(allbdt)
+
+dists = [ecfmodbdt]
 
 for d in dists:
   plot.AddDistribution(d)
