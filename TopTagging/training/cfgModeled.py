@@ -44,7 +44,7 @@ formulae = [ (x,'F') for x in
             'ecfN_2_4_20/pow(ecfN_1_3_20,2.00)',
 #            'ecfN_2_4_20/pow(ecfN_3_3_05,2.67)',
 #            'ecfN_2_4_20/pow(ecfN_2_4_40,0.50)',
-             'tau32SD',
+#             'tau32SD',
     ]
 ]
 

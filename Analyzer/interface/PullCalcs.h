@@ -1,13 +1,4 @@
 
-double DeltaPhi(double phi1, double phi2) {
-  double dPhi = phi1-phi2;
-  if (dPhi<-TMath::Pi())
-    dPhi = 2*TMath::Pi()+dPhi;
-  else if (dPhi>TMath::Pi())
-    dPhi = -2*TMath::Pi()+dPhi;
-  return dPhi;
-}
-
 
 TVector2 GetPull(fastjet::PseudoJet const &jet)
 {
@@ -20,7 +11,7 @@ TVector2 GetPull(fastjet::PseudoJet const &jet)
   for (auto&& constituent : constituents) {
     double dY = constituent.rapidity()-jetY;
 
-    double dPhi = DeltaPhi(constituent.phi(),jetPhi);
+    double dPhi = SignedDeltaPhi(constituent.phi(),jetPhi);
 
     double weight = constituent.pt()*TMath::Sqrt(dY*dY + dPhi*dPhi);
 
@@ -33,7 +24,7 @@ TVector2 GetPull(fastjet::PseudoJet const &jet)
 
 double GetPullAlpha(fastjet::PseudoJet const &j1, fastjet::PseudoJet const &j2, TVector2 vPull)
 {
-  TVector2 vDir(j1.rapidity()-j2.rapidity(),DeltaPhi(j1.phi(),j2.phi()));
+  TVector2 vDir(j1.rapidity()-j2.rapidity(),SignedDeltaPhi(j1.phi(),j2.phi()));
   double phiPull = vPull.DeltaPhi(vDir);
   return phiPull;
 }

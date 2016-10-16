@@ -20,7 +20,7 @@ elif args.cut=='mass':
   plotlabel = '110 < m_{SD} < 210 GeV'
 elif args.cut=='btag':
   cut = 'btagCut_' 
-  plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{max SJ CSV>0.46}:'
+  plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{max SJ CSV>0.46}'
 elif args.cut=='masstau':
   cut = 'masstauCut_'
   plotlabel = '#splitline{110 < m_{SD} < 210 GeV}{#tau_{32}<0.6}'
@@ -33,34 +33,29 @@ fin = root.TFile(figsdir+'/'+cut+'hists.root')
 
 roc.Logy()
 roc.SetPlotRange(0.005,1)
-roc.InitCanvas(.7,.15,.94,.5)
+roc.InitCanvas(.65,.15,.94,.6)
 roc.SetFile(fin)
 roc.c.AddPlotLabel(plotlabel,.18,.77,False,42,.04)
 
 variables = [
-  #('top_all_bdt','All BDT',1,1),
-  ('top_ecfv7_bdt','ECF BDT v7',11,1),
-  ('top_ecfv6_bdt','ECF BDT v6',3,1),
-  ('top_ecfv5_bdt','ECF BDT v5',1,1),
-  #('top_ecfv3_bdt','ECF BDT v3',1,2),
-  #('top_ecfmodeled_bdt','ECF BDT v1',0,1),
-  ('top_ecf_bdt','ECF BDT',2,1),
-  #('min_secfN_1_3_20','min(1e3)'),
-  #('avg_secfN_1_3_20','avg(1e3)',2,2),
-  #('mW_minalpha','m_{W}, min pull'),
-  #('mW_minDR','m_{W}, min #DeltaR'),
-  #('mW_best','best m_{W}'),
-  ('alpha1','#alpha angle',3,2),
-  #('alpha2','Subleading #alpha'),
-  #('fitprob','P(kin fit)',4,2),
-  #('fitmassW','m_{W}, kin fit'),
-  ('N3_05','N3, #beta=0.5',11,2),
-  ('N3_10','N3, #beta=1.0',6,2),
-  ('N3_20','N3, #beta=2.0',10,2),
-  ('tau32','#tau_{32}',2,3),
-  ('tau32SD','groomed #tau_{32}',3,3),
-  #('qmass','Q-vol(mass)'),
-  #('qtau32','Q-vol(tau32)',4,3),
+  ('top_ecfv7_bdt','ECF+#tau_{32}^{SD} BDT',1,1),
+  ('top_ecfv6_bdt','ECF BDT',2,1),
+  ('tau32SD','Groomed #tau_{32}',3,2),
+  ('tau32','#tau_{32}',4,2),
+  ('input0','e(1,2,2)/e(1,2,1)^{2}',3,3),
+  ('input1','e(1,3,4)/e(2,3,2)',4,3),
+  ('input2','e(3,3,1)/e(1,3,4)^{3/4}',5,3),
+  ('input3','e(3,3,1)/e(2,3,2)^{3/4}',6,3),
+  ('input4','e(3,3,2)/e(3,3,4)^{1/2}',7,3),
+  ('input5','e(1,4,2)/e(1,3,1)^{2}',8,3),
+  ('input6','e(1,4,4)/e(1,3,2)^{2}',9,3),
+  ('input7','e(2,4,0.5/e(1,3,0.5)^{2}',10,3),
+  ('input8','e(2,4,1)/e(1,3,1)^{2}',11,3),
+  ('input9','e(2,4,1)/e(2,3,0.5)^{2}',12,3),
+  ('input10','e(2,4,2)/e(1,3,2)^{2}',13,3),
+  # ('N3_05','N3, #beta=0.5',11,2),
+  # ('N3_10','N3, #beta=1.0',6,2),
+  # ('N3_20','N3, #beta=2.0',10,2),
             ] 
 for iV in xrange(len(variables)):
   print variables[iV]

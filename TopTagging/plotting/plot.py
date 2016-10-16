@@ -76,62 +76,62 @@ if plotlabel:
 
 dists = []
 
-mW_qg = root.Distribution('mW_qg',0,300,50,'Disubjet mass, max QGL [GeV]','Events/6 GeV',999,-999,'mW_qg')
-dists.append(mW_qg)
+# mW_qg = root.Distribution('mW_qg',0,300,50,'Disubjet mass, max QGL [GeV]','Events/6 GeV',999,-999,'mW_qg')
+# dists.append(mW_qg)
 
-minqg = root.Distribution('minqg',0,1,50,'min QGL','Events')
-dists.append(minqg)
+# minqg = root.Distribution('minqg',0,1,50,'min QGL','Events')
+# dists.append(minqg)
 
-avgqg = root.Distribution('avgqg',0,1,50,'avg QGL','Events')
-dists.append(avgqg)
+# avgqg = root.Distribution('avgqg',0,1,50,'avg QGL','Events')
+# dists.append(avgqg)
 
-N3_10 = root.Distribution("ecfN_2_4_10/TMath::Power(ecfN_1_3_10,2)",0.5,3.5,50,"N_{3}(#beta=1.0)","Events",999,-999,"N3_10");
-dists.append(N3_10)
+# N3_10 = root.Distribution("ecfN_2_4_10/TMath::Power(ecfN_1_3_10,2)",0.5,3.5,50,"N_{3}(#beta=1.0)","Events",999,-999,"N3_10");
+# dists.append(N3_10)
 
-N3_05 = root.Distribution("ecfN_2_4_05/TMath::Power(ecfN_1_3_05,2)",1,2.5,50,"N_{3}(#beta=0.5)","Events",999,-999,"N3_05");
-dists.append(N3_05)
+# N3_05 = root.Distribution("ecfN_2_4_05/TMath::Power(ecfN_1_3_05,2)",1,2.5,50,"N_{3}(#beta=0.5)","Events",999,-999,"N3_05");
+# dists.append(N3_05)
 
-N3_20 = root.Distribution("ecfN_2_4_20/TMath::Power(ecfN_1_3_20,2)",0,5,50,"N_{3}(#beta=2.0)","Events",999,-999,"N3_20");
-dists.append(N3_20)
+# N3_20 = root.Distribution("ecfN_2_4_20/TMath::Power(ecfN_1_3_20,2)",0,5,50,"N_{3}(#beta=2.0)","Events",999,-999,"N3_20");
+# dists.append(N3_20)
 
-N3_40 = root.Distribution("ecfN_2_4_40/TMath::Power(ecfN_1_3_40,2)",0,5,50,"N_{3}(#beta=4.0)","Events",999,-999,"N3_40");
-dists.append(N3_40)
+# N3_40 = root.Distribution("ecfN_2_4_40/TMath::Power(ecfN_1_3_40,2)",0,5,50,"N_{3}(#beta=4.0)","Events",999,-999,"N3_40");
+# dists.append(N3_40)
 
-fitmassRatio = root.Distribution('fitmassW/fitmass',0,2,50,'Fit m_{W}/m_{t}','Events',999,-999,'fitmassRatio')
-dists.append(fitmassRatio)
+# fitmassRatio = root.Distribution('fitmassW/fitmass',0,2,50,'Fit m_{W}/m_{t}','Events',999,-999,'fitmassRatio')
+# dists.append(fitmassRatio)
 
-mW_minalpha = root.Distribution('mW_minalphapull',0,300,50,'Disubjet mass, min pull [GeV]','Events/6 GeV',999,-999,'mW_minalpha')
-dists.append(mW_minalpha)
+# mW_minalpha = root.Distribution('mW_minalphapull',0,300,50,'Disubjet mass, min pull [GeV]','Events/6 GeV',999,-999,'mW_minalpha')
+# dists.append(mW_minalpha)
 
-minalpha = root.Distribution('minpullalpha',0,3.14,50,'Min subjet pair pull #phi','Events',999,-999,'minalpha')
-#dists.append(minalpha)
+# minalpha = root.Distribution('minpullalpha',0,3.14,50,'Min subjet pair pull #phi','Events',999,-999,'minalpha')
+# #dists.append(minalpha)
 
-alpha1 = root.Distribution('TMath::Abs(alphapull1)',0,3.14,50,'Leading pT #alpha angle','Events',999,-999,'alpha1')
-dists.append(alpha1)
+# alpha1 = root.Distribution('TMath::Abs(alphapull1)',0,3.14,50,'Leading pT #alpha angle','Events',999,-999,'alpha1')
+# dists.append(alpha1)
 
-alpha2 = root.Distribution('TMath::Abs(alphapull2)',0,3.14,50,'Subleading pT #alpha angle','Events',999,-999,'alpha2')
-dists.append(alpha2)
+# alpha2 = root.Distribution('TMath::Abs(alphapull2)',0,3.14,50,'Subleading pT #alpha angle','Events',999,-999,'alpha2')
+# dists.append(alpha2)
 
-beta1 = root.Distribution('betapull1',-3.14,3.14,50,'Leading pT #beta angle','Events',999,-999,'beta1')
-#dists.append(beta1)
+# beta1 = root.Distribution('betapull1',-3.14,3.14,50,'Leading pT #beta angle','Events',999,-999,'beta1')
+# #dists.append(beta1)
 
-beta2 = root.Distribution('betapull2',-3.14,3.14,50,'Subleading pT #beta angle','Events',999,-999,'beta2')
-#dists.append(beta2)
+# beta2 = root.Distribution('betapull2',-3.14,3.14,50,'Subleading pT #beta angle','Events',999,-999,'beta2')
+# #dists.append(beta2)
 
-fitprob = root.Distribution('fitprob',-1.1,1.1,44,'P(fit)','Events')
-dists.append(fitprob)
+# fitprob = root.Distribution('fitprob',-1.1,1.1,44,'P(fit)','Events')
+# dists.append(fitprob)
 
-fitmassW = root.Distribution('fitmassW',-1.1,300,50,'Fit W mass [GeV]','Events/6 GeV')
-dists.append(fitmassW)
+# fitmassW = root.Distribution('fitmassW',-1.1,300,50,'Fit W mass [GeV]','Events/6 GeV')
+# dists.append(fitmassW)
 
-minDR = root.Distribution('TMath::Sqrt(dR2_minDR)',0,1.5,50,'min #Delta R_{subjets}','Events',999,-999,'minDR')
-dists.append(minDR)
+# minDR = root.Distribution('TMath::Sqrt(dR2_minDR)',0,1.5,50,'min #Delta R_{subjets}','Events',999,-999,'minDR')
+# dists.append(minDR)
 
-mW_minDR = root.Distribution('mW_minDR',0,300,50,'Disubjet mass, closest subjets [GeV]','Events/6 GeV',999,-999,'mW_minDR')
-dists.append(mW_minDR)
+# mW_minDR = root.Distribution('mW_minDR',0,300,50,'Disubjet mass, closest subjets [GeV]','Events/6 GeV',999,-999,'mW_minDR')
+# dists.append(mW_minDR)
 
-mW_best = root.Distribution('mW_best',0,300,50,'Best subjet W mass [GeV]','Events/6 GeV',999,-999,'mW_best')
-#dists.append(mW_best)
+# mW_best = root.Distribution('mW_best',0,300,50,'Best subjet W mass [GeV]','Events/6 GeV',999,-999,'mW_best')
+# #dists.append(mW_best)
 
 tau32 = root.Distribution("tau32",0,1,50,'#tau_{32}','Events/0.02')
 dists.append(tau32)
@@ -148,16 +148,34 @@ dists.append(pt)
 rho = root.Distribution("TMath::Log(TMath::Power(mSD,2)/TMath::Power(pt,2))",-10,2,50,'#rho','Events',999,-999,'rho')
 dists.append(rho)
 
-ecfbdt = root.Distribution('top_ecf_bdt',-.5,.5,50,'ECF BDT','Events')
-dists.append(ecfbdt)
+# ecfbdt = root.Distribution('top_ecf_bdt',-.5,.5,50,'ECF BDT','Events')
+# dists.append(ecfbdt)
 
-ecfmodbdt = root.Distribution('top_ecfv7_bdt',-1,1,50,'ECF Modeled BDT v7','Events')
-dists.append(ecfmodbdt)
+ecfbdtv6 = root.Distribution('top_ecfv6_bdt',-1,1,50,'ECF-only BDT','Events')
+dists.append(ecfbdtv6)
+
+
+ecfbdtv7 = root.Distribution('top_ecfv7_bdt',-1,1,50,'ECF+#tau_{32}^{SD} BDT','Events')
+dists.append(ecfbdtv7)
+
+dists.append(root.Distribution('ecfN_1_2_20/pow(ecfN_1_2_10,2.00)',2,10,50,'e(1,2,2)/e(1,2,1)^{2}','Events',999,-999,'input0'))
+dists.append(root.Distribution('ecfN_1_3_40/ecfN_2_3_20',0,1,50,'e(1,3,4)/e(2,3,2)','Events',999,-999,'input1'))
+dists.append(root.Distribution('ecfN_3_3_10/pow(ecfN_1_3_40,.75)',.5,4,50,'e(3,3,1)/e(1,3,4)^{3/4}','Events',999,-999,'input2'))
+dists.append(root.Distribution('ecfN_3_3_10/pow(ecfN_2_3_20,.75)',0.4,1.4,50,'e(3,3,1)/e(2,3,2)^{3/4}','Events',999,-999,'input3'))
+dists.append(root.Distribution('ecfN_3_3_20/pow(ecfN_3_3_40,.5)',0,.25,50,'e(3,3,2)/e(3,3,4)^{1/2}','Events',999,-999,'input4'))
+dists.append(root.Distribution('ecfN_1_4_20/pow(ecfN_1_3_10,2)',0,2,50,'e(1,4,2)/e(1,3,1)^{2}','Events',999,-999,'input5'))
+dists.append(root.Distribution('ecfN_1_4_40/pow(ecfN_1_3_20,2)',0,2.5,50,'e(1,4,4)/e(1,3,2)^{2}','Events',999,-999,'input6'))
+dists.append(root.Distribution('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,3,50,'e(2,4,0.5)/e(1,3,0.5)^{2}','Events',999,-999,'input7'))
+dists.append(root.Distribution('ecfN_2_4_10/pow(ecfN_1_3_10,2)',1,4,50,'e(2,4,1)/e(1,3,1)^{2}','Events',999,-999,'input8'))
+dists.append(root.Distribution('ecfN_2_4_10/pow(ecfN_2_3_05,2)',0,1.5,50,'e(2,4,1)/e(2,3,0.5)^{2}','Events',999,-999,'input9'))
+dists.append(root.Distribution('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,50,'e(2,4,2)/e(1,3,2)^{2}','Events',999,-999,'input10'))
+
+
 
 #allbdt = root.Distribution('top_all_bdt',-.5,.5,50,'All BDT','Events')
 #dists.append(allbdt)
 
-dists = [ecfmodbdt]
+# dists = [ecfmodbdt]
 
 for d in dists:
   plot.AddDistribution(d)
