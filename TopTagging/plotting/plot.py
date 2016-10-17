@@ -133,6 +133,10 @@ dists = []
 # mW_best = root.Distribution('mW_best',0,300,50,'Best subjet W mass [GeV]','Events/6 GeV',999,-999,'mW_best')
 # #dists.append(mW_best)
 
+maxcsv = root.Distribution('maxcsv',0,1,50,'max SJ CSV','Events')
+dists.append(maxcsv)
+
+'''
 tau32 = root.Distribution("tau32",0,1,50,'#tau_{32}','Events/0.02')
 dists.append(tau32)
 
@@ -169,8 +173,7 @@ dists.append(root.Distribution('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,3,50,'e(2,4,0.
 dists.append(root.Distribution('ecfN_2_4_10/pow(ecfN_1_3_10,2)',1,4,50,'e(2,4,1)/e(1,3,1)^{2}','Events',999,-999,'input8'))
 dists.append(root.Distribution('ecfN_2_4_10/pow(ecfN_2_3_05,2)',0,1.5,50,'e(2,4,1)/e(2,3,0.5)^{2}','Events',999,-999,'input9'))
 dists.append(root.Distribution('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,50,'e(2,4,2)/e(1,3,2)^{2}','Events',999,-999,'input10'))
-
-
+'''
 
 #allbdt = root.Distribution('top_all_bdt',-.5,.5,50,'All BDT','Events')
 #dists.append(allbdt)

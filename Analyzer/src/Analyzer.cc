@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#define DEBUG 0
+#define DEBUG 1
 
 using namespace scramjet;
 using namespace std;
@@ -233,6 +233,26 @@ void Analyzer::Run() {
     qdef = new fastjet::JetDefinition(qplugin);
   }
   int qcounter=0;
+
+  // initialize HTT
+  if (doHTT) {
+    bool optimalR=true; bool doHTTQ=false;
+    double minSJPt=0.; double minCandPt=0.;
+    double sjmass=30.; double mucut=0.8;
+    double filtR=0.3; int filtN=5;
+    int mode=4; double minCandMass=0.;
+    double maxCandMass=9999999.; double massRatioWidth=9999999.;
+    double minM23Cut=0.; double minM13Cut=0.;
+    double maxM13Cut=9999999.;  bool rejectMinR=false;
+    htt = new fastjet::HEPTopTaggerV2(optimalR,doHTTQ,
+                             minSJPt,minCandPt,
+                             sjmass,mucut,
+                             filtR,filtN,
+                             mode,minCandMass,
+                             maxCandMass,massRatioWidth,
+                             minM23Cut,minM13Cut,
+                             maxM13Cut,rejectMinR);
+  }
 
   // initialize shower deco
   if (doShowerDeco) {
@@ -680,6 +700,17 @@ void Analyzer::Run() {
             }
           }
           tr.TriggerSubEvent("pulls");
+
+          /////// HTT ///////
+          if (doHTT) {
+            fastjet::PseudoJet taggedJet = htt->result(*leadingJetCA);
+            if (taggedJet!=0) {
+              fastjet::HEPTopTaggerV2Structure *s = (fastjet::HEPTopTaggerV2Structure*)taggedJet.structure_non_const_ptr();
+              outjet->htt_mass = s->top_mass();
+              outjet->htt_frec = s->fRec();
+            }
+          }
+          tr.TriggerSubEvent("HTT");
 
           /////// shower deco ///////
           // TODO 

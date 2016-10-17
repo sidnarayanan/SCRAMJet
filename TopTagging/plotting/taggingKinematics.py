@@ -69,7 +69,7 @@ def getShapes(tree,vtag,vkin,cut,weight):
   global counter
   ctmp.cd()
   nkinbins=20
-  h1 = root.TH1F('h1_%i'%counter,'h1_%i'%counter,1000,vtag.lo,vtag.hi)
+  h1 = root.TH1D('h1_%i'%counter,'h1_%i'%counter,1000,vtag.lo,vtag.hi)
   tree.Draw('%s>>h1_%i'%(vtag.formula,counter),tTIMES(weight,tAND('mSD>110&&mSD<210',cut)),'')
   counter += 1
 
@@ -89,7 +89,7 @@ def getShapes(tree,vtag,vkin,cut,weight):
     else:
       val = h1.Integral(iB,1000)
     if val/total >= threshold:
-      h1kin = root.TH1F('h1_%i'%counter,'h1_%i'%counter,nkinbins,vkin.lo,vkin.hi)
+      h1kin = root.TH1D('h1_%i'%counter,'h1_%i'%counter,nkinbins,vkin.lo,vkin.hi)
       tag = h1.GetBinCenter(iB)
       if vtag.normal:
         tree.Draw('%s>>h1_%i'%(vkin.formula,counter),tTIMES(weight,tAND('%s>%f'%(vtag.formula,tag),cut)),'')
@@ -128,15 +128,15 @@ def drawShapes(listOfShapes,nickname,axis,labels):
 varlist = [
 #      Variable('minqg',-10,10,'minqg'),
 
-      Variable('top_ecfv5_bdt',-0.5,0.5,'top_ecfv5_bdt'),
-      Variable('top_ecfv6_bdt',-1.,1.,'top_ecfv6_bdt'),
-      Variable('top_ecfv7_bdt',-1.,1.,'top_ecfv7_bdt'),
-      Variable('top_ecf_bdt',-0.5,0.5,'top_ecf_bdt'),
-      Variable('tau32',0,1,'tau32',False),
-      Variable('tau32SD',0,1,'tau32SD',False),
-#      Variable('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,2.5,'N3_05',False),
-#      Variable('ecfN_2_4_10/pow(ecfN_1_3_10,2)',0.5,3.5,'N3_10',False),
-#      Variable('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,'N3_20',False),
+#      Variable('top_ecfv5_bdt',-0.5,0.5,'top_ecfv5_bdt'),
+#      Variable('top_ecfv6_bdt',-1.,1.,'top_ecfv6_bdt'),
+#      Variable('top_ecfv7_bdt',-1.,1.,'top_ecfv7_bdt'),
+#      Variable('top_ecf_bdt',-0.5,0.5,'top_ecf_bdt'),
+#      Variable('tau32',0,1,'tau32',False),
+#      Variable('tau32SD',0,1,'tau32SD',False),
+      Variable('ecfN_2_4_05/pow(ecfN_1_3_05,2)',1,2.5,'N3_05',False),
+      Variable('ecfN_2_4_10/pow(ecfN_1_3_10,2)',0.5,3.5,'N3_10',False),
+      Variable('ecfN_2_4_20/pow(ecfN_1_3_20,2)',0,5,'N3_20',False),
 #      Variable('mW_minalphapull',0,300,'mW_minalpha'),
 #      Variable('mW_minDR',0,300,'mW_minDR'),
 #      Variable('TMath::Abs(alphapull1)',0,3.2,'alpha1',False),

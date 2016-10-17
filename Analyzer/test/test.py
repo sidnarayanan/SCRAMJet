@@ -23,6 +23,7 @@ if __name__ == "__main__":
     skimmer.isData=False
     skimmer.doHeatMap=False
     skimmer.doECF=True
+    skimmer.doHTT=True
     skimmer.doQjets=False
     skimmer.doKinFit=False
     if 'TT' in fullPath:

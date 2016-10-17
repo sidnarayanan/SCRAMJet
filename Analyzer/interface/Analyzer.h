@@ -42,6 +42,7 @@
 #include "KinFitFunction.h"
 #include "PullCalcs.h"
 #include "SDAlgorithm.h"
+#include "HEPTopTaggerWrapperV2.h"
 
 // JEC
 //#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -231,6 +232,8 @@ public :
       t->Branch("minqg",&minqg,"minqg/f");
       t->Branch("avgqg",&avgqg,"avgqg/f");
       t->Branch("mW_qg",&mW_qg,"mW_qg/f");
+      t->Branch("htt_frec",&htt_frec,"htt_frec/f");
+      t->Branch("htt_mass",&htt_mass,"htt_mass/f");
       for (auto beta : betas) {
         for (auto N : Ns) {
           for (auto o : orders) {
@@ -294,6 +297,8 @@ public :
       minpullangle=999;
       // QGL
       sumqg=-1; minqg=-1; avgqg=-1; mW_qg=-1;
+      // htt
+      htt_mass=-1; htt_frec=-1;
       // ecf
       for (auto beta : betas) {
         for (auto N : Ns) {
@@ -349,6 +354,8 @@ public :
     float mW_minalphapull=0, minpullangle=0;
     // QGL
     float sumqg=0, minqg=0, avgqg=0, mW_qg=0;
+    // htt
+    float htt_mass=0, htt_frec=0;
 
   };
 
@@ -417,6 +424,7 @@ public :
   ProcessType processType=kNone;             // determine what to do the jet matching to
   TString showerDecoConfig="";
 
+  bool doHTT=false;
   bool doECF=false;
   bool doQjets=false;
   bool doKinFit=false;
@@ -464,6 +472,9 @@ private:
   // qjets
   qjets::QjetsPlugin *qplugin=0;
   fastjet::JetDefinition *qdef=0;
+
+  // htt
+  fastjet::HEPTopTaggerV2 *htt=0;
 
   // shower deco
   AnalysisParameters *decoParams=0;

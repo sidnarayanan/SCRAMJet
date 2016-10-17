@@ -5,6 +5,7 @@
 <use   name="PandaCore/Tools"/>
 <use   name="fastjet"/>
 <use   name="fastjet-contrib"/>
+<use   name="clhep"/>
 <use   root=""/>
 <export>
   <lib   name="1"/>
