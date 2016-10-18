@@ -23,13 +23,3 @@ cd -
 
 python skim.py $THISPROCESS
 
-if which lcg-cp
-then
-  COPYCMD="lcg-cp -v -D srmv2 -b"
-elif which gfal-copy
-then
-  COPYCMD="gfal-copy"
-else
-  echo "Cannot copy output"
-  exit 127
-fi

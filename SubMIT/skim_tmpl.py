@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
   def fn(shortName,longName,first,last):
     outfilename = shortName+'.root'
+    PInfo(sname,outfilename)
 
     start=clock()
 
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     skimmer.isData=False
     skimmer.doHeatMap=False
     skimmer.doECF=True
+    skimmer.doHTT=True
     skimmer.doKinFit=False
     skimmer.doQjets=False
     skimmer.firstEvent=first
@@ -69,6 +71,9 @@ if __name__ == "__main__":
 
     mvargs = 'file://$PWD/output.root srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=XXXX%s'%outfilename
     PInfo(sname,mvargs)
+    system('lcg-cp -v -D srmv2 -b '+mvargs)
+    system('gfal-copy '+mvargs)
+    '''
     try:
       PInfo(sname,'Attempting to move using lcg-cp...')
       subprocess.call('lcg-cp -v -D srmv2 -b '+mvargs)
@@ -77,6 +82,7 @@ if __name__ == "__main__":
       PWarning(sname,'lcg-cp not found, falling back to gfal-copy...')
       subprocess.call('gfal-copy '+mvargs)
       PInfo(sname,'...successful!')
+    '''
     system('rm input.root')
 
     PInfo(sname,'finished in %f'%(clock()-start)); start=clock()
@@ -84,6 +90,7 @@ if __name__ == "__main__":
   
   cfg = open('local.cfg')
   lines = list(cfg)
+  #lines.reverse()
   ll = lines[which].split()
   shortname = ll[0]
   first = int(ll[1])

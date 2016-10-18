@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#define DEBUG 1
+#define DEBUG 0
 
 using namespace scramjet;
 using namespace std;

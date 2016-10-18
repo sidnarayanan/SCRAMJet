@@ -27,14 +27,13 @@ output = {1}/$(Cluster)_$(Process).out
 error = {1}/$(Cluster)_$(Process).err
 log = {1}/$(Cluster)_$(Process).log
 requirements = ( \ 
-                  isUndefined(IS_GLIDEIN) || \
-                  ( OSGVO_OS_STRING == "RHEL 6" && HAS_CVMFS_cms_cern_ch == True ) || \
+                  (OSGVO_OS_STRING == "RHEL 6" && HAS_CVMFS_cms_cern_ch) || \
                   GLIDEIN_REQUIRED_OS == "rhel6" || \
-                  ( OpSysAndVer == "SL6" && HasCVMFS == True ) \
+                  (GLIDEIN_Site == "MIT_CampusFactory" && (BOSCOGroup == "bosco_cms") && HAS_CVMFS_cms_cern_ch) \
                 ) && \
                 ( \
                   isUndefined(GLIDEIN_Entry_Name) || \
-                  !stringListMember(GLIDEIN_Entry_Name, "CMS_T2_US_Nebraska_Red_op,CMS_T2_US_Nebraska_Red_gw1_op,CMS_T2_US_Nebraska_Red_gw2_op,CMS_T3_MX_Cinvestav_proton_work,CMS_T3_US_Omaha_tusker,CMSHTPC_T3_US_Omaha_tusker,Glow_US_Syracuse_condor,Glow_US_Syracuse_condor-ce01,Gluex_US_NUMEP_grid1,HCC_US_BNL_gk01,HCC_US_BNL_gk02,HCC_US_BU_atlas-net2,OSG_US_FIU_HPCOSGCE,OSG_US_Hyak_osg,OSG_US_UConn_gluskap,OSG_US_SMU_mfosgce", ",") \
+                  !stringListMember(GLIDEIN_Entry_Name, "CMS_T2_US_Nebraska_Red_op,CMS_T2_US_Nebraska_Red_gw1_op,CMS_T2_US_Nebraska_Red_gw2_op,CMS_T3_MX_Cinvestav_proton_work,CMS_T3_US_Omaha_tusker,CMSHTPC_T3_US_Omaha_tusker,Glow_US_Syracuse_condor,Glow_US_Syracuse_condor-ce01,Gluex_US_NUMEP_grid1,HCC_US_BNL_gk01,HCC_US_BNL_gk02,HCC_US_BU_atlas-net2,OSG_US_FIU_HPCOSGCE,OSG_US_Hyak_osg,OSG_US_UConn_gluskap,OSG_US_SMU_mfosgce,SU-OG,HOSTED_BOSCO_CE", ",") \
                 )
 rank = Mips
 arguments = $(Process)
